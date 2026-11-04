@@ -1,0 +1,12 @@
+node_modules/
+.next/
+out/
+.env*
+!.env.example
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+# Archivos de trabajo que ya estaban en la carpeta
+/Logo1.png
+/banner.png
+/*.pptx
