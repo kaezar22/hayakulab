@@ -52,7 +52,6 @@ Cada `git push` a `main` vuelve a publicar el sitio.
 
 ## Pendientes
 
-- Confirmar que el correo `hola@hayakulab.com` existe (o cambiarlo en `lib/site.ts`).
 - Poner el número de WhatsApp en `lib/site.ts` para que aparezcan los botones de WhatsApp.
 - (Opcional) Crear un enlace de Cal.com/Calendly y ponerlo en `BOOKING_URL`; mientras tanto, "Diagnóstico gratis" abre un correo.
 - Agregar más testimonios en `TESTIMONIALS` cuando haya.

@@ -7,7 +7,7 @@ export const SITE_URL = "https://www.hayakulab.com";
 export const BRAND = "Hayaku Lab";
 
 /** Correo de contacto. Revisa que el buzón exista en tu proveedor del dominio. */
-export const EMAIL = "hola@hayakulab.com";
+export const EMAIL = "hello@hayakulab.com";
 
 /**
  * Número de WhatsApp con indicativo y sin espacios ni "+", ej. "573001234567".
