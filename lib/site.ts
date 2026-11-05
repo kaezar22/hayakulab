@@ -41,7 +41,7 @@ export const TESTIMONIALS = [
     logo: "/nutrienti.png",
     client: "Nutrienti",
     quote:
-      "César nos ayudó a sacarle mucho más provecho a las herramientas de IA que ya teníamos. Además, automatizó tareas que antes tomaban horas en completarse y entregarse: con una herramienta a la medida que desarrolló para nosotros, ahora toman segundos.",
+      "Hayaku Lab nos ayudó a sacarle mucho más provecho a las herramientas de IA que ya teníamos. Además, automatizó tareas que antes tomaban horas en completarse y entregarse: con una herramienta a la medida que desarrolló para nosotros, ahora toman segundos.",
     role: "Cliente · Configuración de IA y automatización",
     stat: "Horas → segundos",
     statLabel: "en tareas que ahora resuelve una herramienta a la medida",
