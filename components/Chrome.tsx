@@ -46,6 +46,7 @@ export function Footer() {
             <h4>Demos</h4>
             <Link href="/demos/pedidos-qr">Pedidos por QR</Link>
             <Link href="/demos/pedidos">Pedidos B2B</Link>
+            <Link href="/demos/qr-eventos">QR Eventos</Link>
           </div>
           <div>
             <h4>Contacto</h4>

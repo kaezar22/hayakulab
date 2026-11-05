@@ -185,7 +185,7 @@ export default function Home() {
           <div className="hk-container">
             <div className="hk-kicker">Demos en vivo</div>
             <h2>Pruébalo tú mismo</h2>
-            <p className="hk-sub">Dos sistemas reales que construimos para clientes, con datos de ejemplo. Haz clic, pide, mueve pedidos y descarga facturas.</p>
+            <p className="hk-sub">Sistemas reales que construimos para clientes, con datos de ejemplo. Haz clic, pide, registra asistentes y descarga facturas.</p>
             <div className="hk-demos">
               <Link href="/demos/pedidos-qr" className="hk-demo">
                 <div className="hk-demo-art art-qr" aria-hidden="true">
@@ -240,6 +240,31 @@ export default function Home() {
                   <div className="hk-tag">Distribuidores y mayoristas</div>
                   <h3>Pedidos B2B con facturación</h3>
                   <p>Tus clientes piden en línea; el sistema reconoce quién es aunque escriba mal el nombre, aplica su lista de precios y deja la factura lista.</p>
+                  <span className="hk-cta">
+                    Probar la demo <i>→</i>
+                  </span>
+                </div>
+              </Link>
+              <Link href="/demos/qr-eventos" className="hk-demo">
+                <div className="hk-demo-art art-ev" aria-hidden="true">
+                  <div className="ev-mini-ticket">
+                    <span>Invitación de</span>
+                    <b>Valen Ríos</b>
+                    <div className="mini-qr" />
+                    <i>QR personal</i>
+                  </div>
+                  <div className="ev-mini-bars">
+                    <span>Asistencia por artista</span>
+                    <div><em>Valen Ríos</em><p><u style={{ width: "86%" }} /></p><b>6</b></div>
+                    <div><em>MC Tano</em><p><u style={{ width: "50%" }} /></p><b>3</b></div>
+                    <div><em>DJ Kaori</em><p><u style={{ width: "28%" }} /></p><b>2</b></div>
+                    <strong>✅ Bienvenida, Lucía</strong>
+                  </div>
+                </div>
+                <div className="hk-demo-body">
+                  <div className="hk-tag">Eventos y venues</div>
+                  <h3>QR Eventos: asistencia por artista</h3>
+                  <p>Cada artista comparte su invitación, cada seguidor recibe un QR personal y en la puerta se escanea. Sabes exactamente cuánta gente trajo cada uno.</p>
                   <span className="hk-cta">
                     Probar la demo <i>→</i>
                   </span>
