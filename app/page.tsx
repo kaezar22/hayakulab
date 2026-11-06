@@ -8,6 +8,7 @@ const PAINS = [
   { before: "Meseros que van y vienen tomando la orden en cada mesa", after: "Un QR por mesa: el cliente pide y el bar lo ve al instante" },
   { before: "Reportes que se arman a mano cada lunes", after: "Tableros que se actualizan solos y alertas cuando algo se sale de rango" },
   { before: "Facturas en PDF que alguien digita en el ERP", after: "La IA las lee, valida las cuentas y deja los datos listos" },
+  { before: "Alguien lee noticias, reseñas o correos y los clasifica a mano en Excel", after: "La IA los resume y clasifica en una tabla lista para filtrar y analizar" },
 ];
 
 const SERVICES = [
@@ -27,6 +28,11 @@ const SERVICES = [
     icon: <path d="M5 6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v7a2.5 2.5 0 0 1-2.5 2.5H11l-4 3v-3h0A2 2 0 0 1 5 14Zm4 3h6M9 12.5h4" />,
     title: "Asistentes con IA",
     text: "Chatbots para tu web o tu equipo que responden con la información de tu empresa, y lectura automática de facturas y documentos.",
+  },
+  {
+    icon: <path d="M4 5h16v14H4zM4 10h16M9 10v9M14 13h3M14 16h3" />,
+    title: "Enriquecimiento de datos",
+    text: "La IA lee textos sueltos —noticias, reseñas, correos, tickets, catálogos— y los convierte en una tabla con resumen, categoría, protagonistas y sentimiento.",
   },
   {
     icon: <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />,
@@ -172,8 +178,10 @@ export default function Home() {
                 </article>
               ))}
               <article className="hk-service hk-service-cta">
-                <h3>¿Tienes otro proceso en mente?</h3>
-                <p>Cuéntanoslo y te decimos si se puede automatizar y cómo.</p>
+                <div>
+                  <h3>¿Tienes otro proceso en mente?</h3>
+                  <p>Cuéntanoslo y te decimos si se puede automatizar y cómo.</p>
+                </div>
                 <OpenChatButton className="hk-btn hk-btn-cyan hk-btn-sm">Preguntarle al asistente</OpenChatButton>
               </article>
             </div>
@@ -185,7 +193,7 @@ export default function Home() {
           <div className="hk-container">
             <div className="hk-kicker">Demos en vivo</div>
             <h2>Pruébalo tú mismo</h2>
-            <p className="hk-sub">Sistemas reales que construimos para clientes, con datos de ejemplo. Haz clic, pide, registra asistentes y descarga facturas.</p>
+            <p className="hk-sub">Sistemas reales que construimos para clientes, con datos de ejemplo. Haz clic, pide, registra asistentes, descarga facturas y explora noticias clasificadas por IA en vivo.</p>
             <div className="hk-demos">
               <Link href="/demos/pedidos-qr" className="hk-demo">
                 <div className="hk-demo-art art-qr" aria-hidden="true">
@@ -267,6 +275,23 @@ export default function Home() {
                   <p>Cada artista comparte su invitación, cada seguidor recibe un QR personal y en la puerta se escanea. Sabes exactamente cuánta gente trajo cada uno.</p>
                   <span className="hk-cta">
                     Probar la demo <i>→</i>
+                  </span>
+                </div>
+              </Link>
+              <Link href="/demos/enriquecimiento" className="hk-demo">
+                <div className="hk-demo-art art-geo" aria-hidden="true">
+                  <div className="src">“Missile strikes hit energy grid as talks stall…”</div>
+                  <div className="arrow">↓ Enriquecido con IA</div>
+                  <div className="rowg"><span>🇷🇺🇺🇦</span><b>Conflicto armado · Guerra en Ucrania</b><i className="n">Negativo</i></div>
+                  <div className="rowg"><span>🇺🇸🇨🇳</span><b>Comercio · Tregua arancelaria</b><i className="z">Neutral</i></div>
+                  <div className="rowg"><span>🇨🇴🇻🇪</span><b>Diplomacia · Acuerdo fronterizo</b><i className="p">Positivo</i></div>
+                </div>
+                <div className="hk-demo-body">
+                  <div className="hk-tag">Analistas, medios y equipos de datos</div>
+                  <h3>Enriquecimiento de datos con IA</h3>
+                  <p>Noticias de geopolítica de 19 medios de todo el mundo, resumidas y clasificadas en vivo: quién aparece, qué países involucra, tema, subtema y sentimiento.</p>
+                  <span className="hk-cta">
+                    Ver la demo en vivo <i>→</i>
                   </span>
                 </div>
               </Link>
