@@ -15,6 +15,23 @@ export const TOPICS = {
 } as const;
 export type Topic = keyof typeof TOPICS;
 
+export const TOPICS_EN: Record<Topic, string> = {
+  conflicto: "Armed conflict",
+  comercio: "Trade and tariffs",
+  sanciones: "Sanctions",
+  energia: "Energy and commodities",
+  diplomacia: "Diplomacy",
+  elecciones: "Elections and domestic politics",
+  economia: "Economy and central banks",
+  tecnologia: "Technology and cybersecurity",
+  migracion: "Migration and borders",
+  derechos: "Human rights and justice",
+};
+
+export function topicLabel(t: Topic, lang: "es" | "en" = "es") {
+  return lang === "en" ? TOPICS_EN[t] : TOPICS[t];
+}
+
 export const TONES = ["positivo", "neutral", "negativo"] as const;
 export type Tone = (typeof TONES)[number];
 
@@ -26,16 +43,20 @@ export type Classification = {
   /** Índice de la noticia en el lote enviado. */
   i: number;
   summary: string;
+  /** Resumen en inglés (para la versión en inglés del sitio). */
+  summaryEn: string;
   people: string[];
   /** ISO 3166-1 alfa-2. */
   countries: string[];
   topic: Topic;
   subtopic: string;
+  subtopicEn: string;
   tone: Tone;
   risk: Risk;
 };
 
 const regionNames = new Intl.DisplayNames(["es"], { type: "region" });
+const regionNamesEn = new Intl.DisplayNames(["en"], { type: "region" });
 
 /** Código ISO válido (o "EU" para la Unión Europea). */
 export function isCountryCode(code: string): boolean {
@@ -47,9 +68,9 @@ export function isCountryCode(code: string): boolean {
   }
 }
 
-export function countryName(code: string): string {
+export function countryName(code: string, lang: "es" | "en" = "es"): string {
   try {
-    return regionNames.of(code) ?? code;
+    return (lang === "en" ? regionNamesEn : regionNames).of(code) ?? code;
   } catch {
     return code;
   }
@@ -114,12 +135,14 @@ export function parseClassification(raw: string, count: number): Classification[
     out.push({
       i,
       summary: summary.slice(0, 400),
+      summaryEn: typeof o.summary_en === "string" && o.summary_en.trim() ? o.summary_en.trim().slice(0, 400) : summary.slice(0, 400),
       people: strings(o.people, 5),
       countries: strings(o.countries, 8)
         .map((c) => c.toUpperCase())
         .filter(isCountryCode),
       topic,
       subtopic: typeof o.subtopic === "string" ? o.subtopic.trim().slice(0, 60) : "",
+      subtopicEn: typeof o.subtopic_en === "string" ? o.subtopic_en.trim().slice(0, 60) : "",
       tone: TONES.includes(tone) ? tone : "neutral",
       risk: RISKS.includes(risk) ? risk : "neutral",
     });

@@ -23,6 +23,11 @@ Cómo responder:
 Información:
 ${KNOWLEDGE}`;
 
+// El visitante está en la versión en inglés del sitio.
+const EN_NOTE = `
+
+The visitor is browsing the English version of the site. Answer in the language of their question (usually English). When you mention a demo, use the English links: /en/demos/pedidos-qr, /en/demos/pedidos, /en/demos/qr-eventos and /en/demos/enriquecimiento. We work remotely with companies in any country.`;
+
 const MAX_QUESTION_CHARS = 600;
 const MAX_HISTORY = 8;
 
@@ -56,8 +61,10 @@ export async function POST(req: Request) {
   }
 
   let messages: Msg[];
+  let lang: "es" | "en" = "es";
   try {
     const body = await req.json();
+    if (body.lang === "en") lang = "en";
     messages = (Array.isArray(body.messages) ? body.messages : [])
       .filter((m: Msg) => (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
       .slice(-MAX_HISTORY)
@@ -75,7 +82,7 @@ export async function POST(req: Request) {
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
     body: JSON.stringify({
       model: "deepseek-chat",
-      messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
+      messages: [{ role: "system", content: lang === "en" ? SYSTEM_PROMPT + EN_NOTE : SYSTEM_PROMPT }, ...messages],
       temperature: 0.4,
       max_tokens: 500,
       stream: true,

@@ -754,3 +754,18 @@ button { font: inherit; }
   .geo-tones div { flex: 1; min-width: 0; }
   .hk-service-cta { flex-direction: column; align-items: flex-start; }
 }
+
+/* ---------- Botón de idioma ---------- */
+.hk-header-actions { display: flex; align-items: center; gap: 0.7rem; }
+.hk-lang { display: inline-flex; padding: 3px; border-radius: 99px; border: 1px solid rgba(255, 255, 255, 0.22); }
+.hk-lang a { color: rgba(255, 255, 255, 0.7); text-decoration: none; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; padding: 0.28rem 0.6rem; border-radius: 99px; line-height: 1; }
+.hk-lang a:hover { color: #fff; }
+.hk-lang a.on { background: rgba(255, 255, 255, 0.16); color: var(--cyan); }
+@media (max-width: 640px) {
+  .hk-header-actions { gap: 0.45rem; }
+  .hk-lang a { padding: 0.25rem 0.45rem; font-size: 0.72rem; }
+  .hk-logo span { font-size: 1rem; }
+  .hk-logo img { width: 38px; }
+}
+@media (max-width: 380px) { .hk-logo span { display: none; } }
+.hk-translated { font-size: 0.8rem; color: #8b8aa3; }

@@ -2,11 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import QRCode from "qrcode";
+import { href, type Lang } from "@/lib/i18n";
 
 // Simulación completa en el navegador: el celular del cliente y el tablero del bar
 // comparten el mismo estado. En el sistema real esto viaja por Supabase Realtime.
 
-type Item = { id: string; name: string; desc: string; price: number; cat: string };
+type Cat = "beer" | "cocktails" | "snacks" | "soft";
+type Item = { id: string; name: string; desc: string; price: number; cat: Cat; en: [string, string] };
 type Status = "nuevo" | "preparando" | "listo" | "entregado";
 type Order = {
   id: string;
@@ -20,21 +22,74 @@ type Order = {
 };
 
 const MENU: Item[] = [
-  { id: "c1", cat: "Cervezas", name: "Cerveza artesanal rubia", desc: "Pinta 473 ml", price: 16000 },
-  { id: "c2", cat: "Cervezas", name: "Cerveza roja", desc: "Pinta 473 ml", price: 17000 },
-  { id: "c3", cat: "Cervezas", name: "Michelada", desc: "Limón, sal y la cerveza que elijas", price: 19000 },
-  { id: "k1", cat: "Cócteles", name: "Mojito", desc: "Ron blanco, hierbabuena, limón", price: 28000 },
-  { id: "k2", cat: "Cócteles", name: "Gin tonic de maracuyá", desc: "Ginebra, tónica, maracuyá", price: 32000 },
-  { id: "k3", cat: "Cócteles", name: "Margarita", desc: "Tequila, triple sec, limón", price: 30000 },
-  { id: "p1", cat: "Para picar", name: "Nachos de la casa", desc: "Guacamole, pico de gallo, queso", price: 26000 },
-  { id: "p2", cat: "Para picar", name: "Alitas BBQ", desc: "10 unidades con papas", price: 34000 },
-  { id: "p3", cat: "Para picar", name: "Empanadas", desc: "5 unidades con ají", price: 18000 },
-  { id: "s1", cat: "Sin alcohol", name: "Limonada de coco", desc: "Vaso 400 ml", price: 12000 },
-  { id: "s2", cat: "Sin alcohol", name: "Soda de frutos rojos", desc: "Vaso 400 ml", price: 11000 },
+  { id: "c1", cat: "beer", name: "Cerveza artesanal rubia", desc: "Pinta 473 ml", price: 16000, en: ["Craft blonde ale", "Pint, 16 oz"] },
+  { id: "c2", cat: "beer", name: "Cerveza roja", desc: "Pinta 473 ml", price: 17000, en: ["Red ale", "Pint, 16 oz"] },
+  { id: "c3", cat: "beer", name: "Michelada", desc: "Limón, sal y la cerveza que elijas", price: 19000, en: ["Michelada", "Lime, salt and your choice of beer"] },
+  { id: "k1", cat: "cocktails", name: "Mojito", desc: "Ron blanco, hierbabuena, limón", price: 28000, en: ["Mojito", "White rum, mint, lime"] },
+  { id: "k2", cat: "cocktails", name: "Gin tonic de maracuyá", desc: "Ginebra, tónica, maracuyá", price: 32000, en: ["Passion fruit gin & tonic", "Gin, tonic, passion fruit"] },
+  { id: "k3", cat: "cocktails", name: "Margarita", desc: "Tequila, triple sec, limón", price: 30000, en: ["Margarita", "Tequila, triple sec, lime"] },
+  { id: "p1", cat: "snacks", name: "Nachos de la casa", desc: "Guacamole, pico de gallo, queso", price: 26000, en: ["House nachos", "Guacamole, pico de gallo, cheese"] },
+  { id: "p2", cat: "snacks", name: "Alitas BBQ", desc: "10 unidades con papas", price: 34000, en: ["BBQ wings", "10 pieces with fries"] },
+  { id: "p3", cat: "snacks", name: "Empanadas", desc: "5 unidades con ají", price: 18000, en: ["Empanadas", "5 pieces with hot sauce"] },
+  { id: "s1", cat: "soft", name: "Limonada de coco", desc: "Vaso 400 ml", price: 12000, en: ["Coconut lemonade", "13 oz glass"] },
+  { id: "s2", cat: "soft", name: "Soda de frutos rojos", desc: "Vaso 400 ml", price: 11000, en: ["Berry soda", "13 oz glass"] },
 ];
 const byId = Object.fromEntries(MENU.map((m) => [m.id, m]));
 const CATS = Array.from(new Set(MENU.map((m) => m.cat)));
 const MY_TABLE = "7";
+
+const TX = {
+  es: {
+    cats: { beer: "Cervezas", cocktails: "Cócteles", snacks: "Para picar", soft: "Sin alcohol" } as Record<Cat, string>,
+    tables: { Barra: "Barra", "Terraza 2": "Terraza 2" } as Record<string, string>,
+    table: "Mesa", now: "ahora", ago: (m: number) => `hace ${m} min`,
+    tabClient: "📱 Cliente · Mesa", tabBar: "🖥️ Tablero del bar",
+    clientLabel: "Lo que ve el cliente al escanear", barLabel: "Lo que ve el bar en su pantalla",
+    waiterComing: "Mesero en camino", callWaiter: "🙋 Llamar mesero",
+    add: "Agregar", remove: "Quitar",
+    viewMine: "Ver mi pedido", viewCart: "Ver pedido", pick: "Elige algo del menú",
+    keepOrdering: "← Seguir pidiendo", yourOrder: "Tu pedido", total: "Total",
+    whose: "¿A nombre de quién?", namePh: "Tu nombre",
+    errName: "Escribe tu nombre para que te encuentren.", errEmpty: "Agrega al menos un producto.",
+    payNote: "Pagas en la barra o al mesero. (La pasarela de pago en línea se puede activar.)",
+    send: "Enviar pedido al bar", backMenu: "← Volver al menú",
+    st: { nuevo: "Pedido recibido", preparando: "Lo estamos preparando", listo: "¡Tu pedido está listo!", entregado: "Pedido entregado. ¡Salud!" } as Record<Status, string>,
+    readyHint: "Acércate a la barra o espera al mesero.", orderWord: "Pedido",
+    steps: ["Recibido", "Preparando", "¡Listo!"],
+    hint: ["👉 Ahora ve al ", "tablero del bar", " y mueve el pedido a “Preparando” y luego a “Listo”: este celular sonará y vibrará."],
+    qrAlt: "Código QR de la demo", qrTitle: "Así se ve el QR de cada mesa.", qrText: " Escanéalo con tu celular para abrir esta demo allá.",
+    board: "Tablero de pedidos", boardSub: "Se actualiza solo · sin recargar", orders: "pedidos", sold: "vendido",
+    callsWaiter: "pide un mesero", attended: "Atendido",
+    cols: { nuevo: "Nuevos", preparando: "Preparando", listo: "Listos" } as Record<string, string>,
+    mine: "Tu pedido", paid: "Pagado", unpaid: "Por cobrar", prepare: "Preparar →", ready: "Listo ✓", delivered: "Entregado",
+    deliveredToday: "entregados hoy", reset: "↺ Reiniciar demo",
+  },
+  en: {
+    cats: { beer: "Beer", cocktails: "Cocktails", snacks: "Snacks", soft: "Non-alcoholic" } as Record<Cat, string>,
+    tables: { Barra: "Bar counter", "Terraza 2": "Patio 2" } as Record<string, string>,
+    table: "Table", now: "now", ago: (m: number) => `${m} min ago`,
+    tabClient: "📱 Guest · Table", tabBar: "🖥️ Bar board",
+    clientLabel: "What the guest sees after scanning", barLabel: "What the bar sees on its screen",
+    waiterComing: "Waiter on the way", callWaiter: "🙋 Call waiter",
+    add: "Add", remove: "Remove",
+    viewMine: "View my order", viewCart: "View order", pick: "Pick something from the menu",
+    keepOrdering: "← Keep ordering", yourOrder: "Your order", total: "Total",
+    whose: "Name for the order", namePh: "Your name",
+    errName: "Type your name so they can find you.", errEmpty: "Add at least one item.",
+    payNote: "Pay at the bar or to the waiter. (Online payment can be enabled.)",
+    send: "Send order to the bar", backMenu: "← Back to menu",
+    st: { nuevo: "Order received", preparando: "We're preparing it", listo: "Your order is ready!", entregado: "Order delivered. Cheers!" } as Record<Status, string>,
+    readyHint: "Head to the bar or wait for the waiter.", orderWord: "Order",
+    steps: ["Received", "Preparing", "Ready!"],
+    hint: ["👉 Now go to the ", "bar board", " and move the order to “Preparing” and then “Ready”: this phone will ring and vibrate."],
+    qrAlt: "Demo QR code", qrTitle: "This is what each table's QR code looks like.", qrText: " Scan it with your phone to open this demo there.",
+    board: "Order board", boardSub: "Updates on its own · no reloading", orders: "orders", sold: "sold",
+    callsWaiter: "is calling a waiter", attended: "Done",
+    cols: { nuevo: "New", preparando: "Preparing", listo: "Ready" } as Record<string, string>,
+    mine: "Your order", paid: "Paid", unpaid: "Unpaid", prepare: "Prepare →", ready: "Ready ✓", delivered: "Delivered",
+    deliveredToday: "delivered today", reset: "↺ Reset demo",
+  },
+};
 
 const cop = (n: number) => "$" + n.toLocaleString("es-CO");
 const total = (o: { lines: { id: string; qty: number }[] }) =>
@@ -80,12 +135,17 @@ function beep() {
   }
 }
 
-function ago(at: number, now: number) {
-  const m = Math.max(0, Math.round((now - at) / 60_000));
-  return m === 0 ? "ahora" : `hace ${m} min`;
-}
 
-export default function QrDemo() {
+
+export default function QrDemo({ lang = "es" }: { lang?: Lang }) {
+  const t = TX[lang];
+  const itemName = (id: string) => (lang === "en" ? byId[id].en[0] : byId[id].name);
+  const itemDesc = (id: string) => (lang === "en" ? byId[id].en[1] : byId[id].desc);
+  const tableName = (x: string) => t.tables[x] ?? `${t.table} ${x}`;
+  const ago = (at: number, nowMs: number) => {
+    const m = Math.max(0, Math.round((nowMs - at) / 60_000));
+    return m === 0 ? t.now : t.ago(m);
+  };
   const [orders, setOrders] = useState<Order[]>(SEED);
   const [cart, setCart] = useState<Record<string, number>>({});
   const [screen, setScreen] = useState<"menu" | "cart" | "status">("menu");
@@ -102,20 +162,20 @@ export default function QrDemo() {
   const prevMine = useRef<Status | null>(null);
 
   useEffect(() => {
-    const url = `${window.location.origin}/demos/pedidos-qr`;
+    const url = `${window.location.origin}${href(lang, "/demos/pedidos-qr")}`;
     QRCode.toDataURL(url, { margin: 1, width: 240, color: { dark: "#150E48", light: "#FFFFFF" } }).then(setQr).catch(() => {});
-    const t = setInterval(() => setNow(Date.now()), 15_000);
-    return () => clearInterval(t);
-  }, []);
+    const iv = setInterval(() => setNow(Date.now()), 15_000);
+    return () => clearInterval(iv);
+  }, [lang]);
 
   // Otras mesas también piden, para que el tablero se sienta vivo.
   useEffect(() => {
-    const t = setInterval(() => {
+    const iv = setInterval(() => {
       if (document.hidden || botIdx.current >= BOTS.length) return;
       const b = BOTS[botIdx.current++];
       setOrders((o) => [...o, { id: `A-${seq.current++}`, ...b, status: "nuevo", at: Date.now() }]);
     }, 28_000);
-    return () => clearInterval(t);
+    return () => clearInterval(iv);
   }, []);
 
   const mine = orders.find((o) => o.id === myId) ?? null;
@@ -132,8 +192,8 @@ export default function QrDemo() {
   const add = (id: string, d: 1 | -1) => setCart((c) => ({ ...c, [id]: Math.max(0, (c[id] ?? 0) + d) }));
 
   function send() {
-    if (!name.trim()) return setErr("Escribe tu nombre para que te encuentren.");
-    if (!cartLines.length) return setErr("Agrega al menos un producto.");
+    if (!name.trim()) return setErr(t.errName);
+    if (!cartLines.length) return setErr(t.errEmpty);
     const id = `A-${seq.current++}`;
     setOrders((o) => [...o, { id, table: MY_TABLE, name: name.trim(), lines: cartLines, status: "nuevo", at: Date.now(), mine: true }]);
     setMyId(id);
@@ -145,11 +205,7 @@ export default function QrDemo() {
   const move = (id: string, status: Status) => setOrders((o) => o.map((x) => (x.id === id ? { ...x, status } : x)));
   const togglePaid = (id: string) => setOrders((o) => o.map((x) => (x.id === id ? { ...x, paid: !x.paid } : x)));
 
-  const cols: { key: Status; title: string }[] = [
-    { key: "nuevo", title: "Nuevos" },
-    { key: "preparando", title: "Preparando" },
-    { key: "listo", title: "Listos" },
-  ];
+  const cols: { key: Status; title: string }[] = (["nuevo", "preparando", "listo"] as Status[]).map((key) => ({ key, title: t.cols[key] }));
   const newCount = orders.filter((o) => o.status === "nuevo").length + help.length;
   const sales = useMemo(() => orders.reduce((s, o) => s + total(o), 0), [orders]);
 
@@ -162,44 +218,40 @@ export default function QrDemo() {
     botIdx.current = 0;
   }
 
-  const steps: { key: Status; label: string }[] = [
-    { key: "nuevo", label: "Recibido" },
-    { key: "preparando", label: "Preparando" },
-    { key: "listo", label: "¡Listo!" },
-  ];
+  const steps: { key: Status; label: string }[] = (["nuevo", "preparando", "listo"] as Status[]).map((key, i) => ({ key, label: t.steps[i] }));
   const stepIdx = mine ? Math.min(2, ["nuevo", "preparando", "listo", "entregado"].indexOf(mine.status)) : 0;
 
   return (
     <div className="qd">
       <div className="qd-switch" role="tablist">
         <button role="tab" aria-selected={view === "cliente"} className={view === "cliente" ? "on" : ""} onClick={() => setView("cliente")}>
-          📱 Cliente · Mesa {MY_TABLE}
+          {t.tabClient} {MY_TABLE}
         </button>
         <button role="tab" aria-selected={view === "bar"} className={view === "bar" ? "on" : ""} onClick={() => setView("bar")}>
-          🖥️ Tablero del bar {newCount > 0 && <i>{newCount}</i>}
+          {t.tabBar} {newCount > 0 && <i>{newCount}</i>}
         </button>
       </div>
 
       <div className="qd-grid">
         {/* ---------- Celular del cliente ---------- */}
         <div className={`qd-phone-col ${view === "cliente" ? "show" : ""}`}>
-          <div className="qd-label">Lo que ve el cliente al escanear</div>
+          <div className="qd-label">{t.clientLabel}</div>
           <div className="qd-phone">
             <div className="qd-notch" />
             <div className="qd-screen">
               <div className="qd-bar-head">
                 <div>
                   <b>Bar La Esquina</b>
-                  <span>Mesa {MY_TABLE}</span>
+                  <span>{tableName(MY_TABLE)}</span>
                 </div>
                 <button
                   className="qd-help"
                   onClick={() => {
-                    setHelp((h) => [...h, `Mesa ${MY_TABLE}`]);
+                    setHelp((h) => [...h, tableName(MY_TABLE)]);
                   }}
-                  disabled={help.includes(`Mesa ${MY_TABLE}`)}
+                  disabled={help.includes(tableName(MY_TABLE))}
                 >
-                  {help.includes(`Mesa ${MY_TABLE}`) ? "Mesero en camino" : "🙋 Llamar mesero"}
+                  {help.includes(tableName(MY_TABLE)) ? t.waiterComing : t.callWaiter}
                 </button>
               </div>
 
@@ -208,7 +260,7 @@ export default function QrDemo() {
                   <div className="qd-cats">
                     {CATS.map((c) => (
                       <button key={c} className={c === cat ? "on" : ""} onClick={() => setCat(c)}>
-                        {c}
+                        {t.cats[c]}
                       </button>
                     ))}
                   </div>
@@ -218,19 +270,19 @@ export default function QrDemo() {
                       return (
                         <div key={m.id} className={`qd-item ${q ? "on" : ""}`}>
                           <div>
-                            <b>{m.name}</b>
-                            <span>{m.desc}</span>
+                            <b>{itemName(m.id)}</b>
+                            <span>{itemDesc(m.id)}</span>
                             <em>{cop(m.price)}</em>
                           </div>
                           {q === 0 ? (
-                            <button className="qd-add" onClick={() => add(m.id, 1)} aria-label={`Agregar ${m.name}`}>
+                            <button className="qd-add" onClick={() => add(m.id, 1)} aria-label={`${t.add} ${itemName(m.id)}`}>
                               +
                             </button>
                           ) : (
                             <div className="qd-step">
-                              <button onClick={() => add(m.id, -1)} aria-label="Quitar">−</button>
+                              <button onClick={() => add(m.id, -1)} aria-label={t.remove}>−</button>
                               <output>{q}</output>
-                              <button onClick={() => add(m.id, 1)} aria-label="Agregar">+</button>
+                              <button onClick={() => add(m.id, 1)} aria-label={t.add}>+</button>
                             </div>
                           )}
                         </div>
@@ -239,11 +291,11 @@ export default function QrDemo() {
                   </div>
                   {mine && (
                     <button className="qd-track" onClick={() => setScreen("status")}>
-                      Ver mi pedido {mine.id} →
+                      {t.viewMine} {mine.id} →
                     </button>
                   )}
                   <button className="qd-cta" disabled={!cartCount} onClick={() => setScreen("cart")}>
-                    {cartCount ? `Ver pedido · ${cartCount} · ${cop(cartTotal)}` : "Elige algo del menú"}
+                    {cartCount ? `${t.viewCart} · ${cartCount} · ${cop(cartTotal)}` : t.pick}
                   </button>
                 </>
               )}
@@ -251,29 +303,29 @@ export default function QrDemo() {
               {screen === "cart" && (
                 <div className="qd-cart">
                   <button className="qd-back" onClick={() => setScreen("menu")}>
-                    ← Seguir pidiendo
+                    {t.keepOrdering}
                   </button>
-                  <h4>Tu pedido</h4>
+                  <h4>{t.yourOrder}</h4>
                   {cartLines.map((l) => (
                     <div key={l.id} className="qd-line">
                       <span>
-                        {l.qty} × {byId[l.id].name}
+                        {l.qty} × {itemName(l.id)}
                       </span>
                       <b>{cop(byId[l.id].price * l.qty)}</b>
                     </div>
                   ))}
                   <div className="qd-line qd-total">
-                    <span>Total</span>
+                    <span>{t.total}</span>
                     <b>{cop(cartTotal)}</b>
                   </div>
                   <label className="qd-name">
-                    <span>¿A nombre de quién?</span>
-                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Tu nombre" maxLength={30} />
+                    <span>{t.whose}</span>
+                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t.namePh} maxLength={30} />
                   </label>
                   {err && <p className="qd-err">{err}</p>}
-                  <p className="qd-note">Pagas en la barra o al mesero. (La pasarela de pago en línea se puede activar.)</p>
+                  <p className="qd-note">{t.payNote}</p>
                   <button className="qd-cta" onClick={send}>
-                    Enviar pedido al bar
+                    {t.send}
                   </button>
                 </div>
               )}
@@ -281,18 +333,15 @@ export default function QrDemo() {
               {screen === "status" && mine && (
                 <div className={`qd-status ${mine.status === "listo" ? "ready" : ""}`}>
                   <button className="qd-back" onClick={() => setScreen("menu")}>
-                    ← Volver al menú
+                    {t.backMenu}
                   </button>
                   <div className="qd-big">
                     {mine.status === "listo" ? "🔔" : mine.status === "entregado" ? "✅" : "⏳"}
                     <b>
-                      {mine.status === "nuevo" && "Pedido recibido"}
-                      {mine.status === "preparando" && "Lo estamos preparando"}
-                      {mine.status === "listo" && "¡Tu pedido está listo!"}
-                      {mine.status === "entregado" && "Pedido entregado. ¡Salud!"}
+                      {t.st[mine.status]}
                     </b>
                     <span>
-                      {mine.status === "listo" ? "Acércate a la barra o espera al mesero." : `Pedido ${mine.id} · ${mine.name}`}
+                      {mine.status === "listo" ? t.readyHint : `${t.orderWord} ${mine.id} · ${mine.name}`}
                     </span>
                   </div>
                   <ol className="qd-steps">
@@ -305,12 +354,12 @@ export default function QrDemo() {
                   <div className="qd-mini">
                     {mine.lines.map((l) => (
                       <div key={l.id}>
-                        {l.qty} × {byId[l.id].name}
+                        {l.qty} × {itemName(l.id)}
                       </div>
                     ))}
                   </div>
                   <p className="qd-hint">
-                    👉 Ahora ve al <b>tablero del bar</b> y mueve el pedido a “Preparando” y luego a “Listo”: este celular sonará y vibrará.
+                    {t.hint[0]}<b>{t.hint[1]}</b>{t.hint[2]}
                   </p>
                 </div>
               )}
@@ -319,9 +368,9 @@ export default function QrDemo() {
           {qr && (
             <div className="qd-qr">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={qr} alt="Código QR de la demo" width={96} height={96} />
+              <img src={qr} alt={t.qrAlt} width={96} height={96} />
               <p>
-                <b>Así se ve el QR de cada mesa.</b> Escanéalo con tu celular para abrir esta demo allá.
+                <b>{t.qrTitle}</b>{t.qrText}
               </p>
             </div>
           )}
@@ -329,21 +378,21 @@ export default function QrDemo() {
 
         {/* ---------- Tablero del bar ---------- */}
         <div className={`qd-board-col ${view === "bar" ? "show" : ""}`}>
-          <div className="qd-label">Lo que ve el bar en su pantalla</div>
+          <div className="qd-label">{t.barLabel}</div>
           <div className="qd-board">
             <div className="qd-board-head">
               <div>
-                <b>Tablero de pedidos</b>
-                <span>Se actualiza solo · sin recargar</span>
+                <b>{t.board}</b>
+                <span>{t.boardSub}</span>
               </div>
               <div className="qd-kpis">
                 <div>
                   <b>{orders.length}</b>
-                  <span>pedidos</span>
+                  <span>{t.orders}</span>
                 </div>
                 <div>
                   <b>{cop(sales)}</b>
-                  <span>vendido</span>
+                  <span>{t.sold}</span>
                 </div>
               </div>
             </div>
@@ -352,8 +401,8 @@ export default function QrDemo() {
               <div className="qd-alerts">
                 {help.map((h, i) => (
                   <div key={h + i} className="qd-alert">
-                    🙋 {h} pide un mesero
-                    <button onClick={() => setHelp((x) => x.filter((_, j) => j !== i))}>Atendido</button>
+                    🙋 {h} {t.callsWaiter}
+                    <button onClick={() => setHelp((x) => x.filter((_, j) => j !== i))}>{t.attended}</button>
                   </div>
                 ))}
               </div>
@@ -371,26 +420,26 @@ export default function QrDemo() {
                     {list.map((o) => (
                       <div key={o.id} className={`qd-card ${o.mine ? "mine" : ""}`}>
                         <div className="qd-card-top">
-                          <b>Mesa {o.table}</b>
+                          <b>{tableName(o.table)}</b>
                           <span>{ago(o.at, now)}</span>
                         </div>
                         <div className="qd-who">
-                          {o.name} · {o.id} {o.mine && <i>Tu pedido</i>}
+                          {o.name} · {o.id} {o.mine && <i>{t.mine}</i>}
                         </div>
                         <ul>
                           {o.lines.map((l) => (
                             <li key={l.id}>
-                              <b>{l.qty}×</b> {byId[l.id].name}
+                              <b>{l.qty}×</b> {itemName(l.id)}
                             </li>
                           ))}
                         </ul>
                         <div className="qd-card-foot">
                           <button className={`qd-paid ${o.paid ? "on" : ""}`} onClick={() => togglePaid(o.id)}>
-                            {o.paid ? "Pagado" : "Por cobrar"} · {cop(total(o))}
+                            {o.paid ? t.paid : t.unpaid} · {cop(total(o))}
                           </button>
-                          {o.status === "nuevo" && <button className="qd-go" onClick={() => move(o.id, "preparando")}>Preparar →</button>}
-                          {o.status === "preparando" && <button className="qd-go" onClick={() => move(o.id, "listo")}>Listo ✓</button>}
-                          {o.status === "listo" && <button className="qd-go ghost" onClick={() => move(o.id, "entregado")}>Entregado</button>}
+                          {o.status === "nuevo" && <button className="qd-go" onClick={() => move(o.id, "preparando")}>{t.prepare}</button>}
+                          {o.status === "preparando" && <button className="qd-go" onClick={() => move(o.id, "listo")}>{t.ready}</button>}
+                          {o.status === "listo" && <button className="qd-go ghost" onClick={() => move(o.id, "entregado")}>{t.delivered}</button>}
                         </div>
                       </div>
                     ))}
@@ -399,8 +448,8 @@ export default function QrDemo() {
               })}
             </div>
             <div className="qd-board-foot">
-              <span>{orders.filter((o) => o.status === "entregado").length} entregados hoy</span>
-              <button onClick={reset}>↺ Reiniciar demo</button>
+              <span>{orders.filter((o) => o.status === "entregado").length} {t.deliveredToday}</span>
+              <button onClick={reset}>{t.reset}</button>
             </div>
           </div>
         </div>

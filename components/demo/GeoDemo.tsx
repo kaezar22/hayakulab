@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { countryName, flag, TOPICS, type Risk, type Tone, type Topic } from "@/lib/geo/classify";
+import { countryName, flag, topicLabel, type Risk, type Tone, type Topic } from "@/lib/geo/classify";
+import type { Lang } from "@/lib/i18n";
 import type { GeoItem, GeoNews } from "@/lib/geo/news";
 import { OUTLETS } from "@/lib/geo/outlets";
 
@@ -9,37 +10,76 @@ const N_COUNTRIES = new Set(OUTLETS.map((o) => o.country)).size;
 
 type Data = Extract<GeoNews, { ok: true }>;
 
-const TONE_LABEL: Record<Tone, string> = { positivo: "Positivo", neutral: "Neutral", negativo: "Negativo" };
-const RISK_LABEL: Record<Risk, string> = { aumenta: "↑ Aumenta", neutral: "→ Neutral", disminuye: "↓ Disminuye" };
+const TX = {
+  es: {
+    tone: { positivo: "Positivo", neutral: "Neutral", negativo: "Negativo" } as Record<Tone, string>,
+    risk: { aumenta: "↑ Aumenta", neutral: "→ Neutral", disminuye: "↓ Disminuye" } as Record<Risk, string>,
+    loading: (n: number, c: number) => [`Leyendo ${n} medios de ${c} países`, "Descartando lo que no es geopolítica", "Resumiendo y clasificando con IA"],
+    loadingNote: "La primera carga de cada hora puede tardar hasta un minuto. Después queda guardada y abre al instante.",
+    errTitle: "No se pudieron cargar las noticias", errGeneric: "No se pudieron cargar las noticias. Intenta en unos minutos.", errNet: "No se pudieron cargar las noticias. Revisa tu conexión.", retry: "Reintentar",
+    headCount: (n: number, c: number) => `${n} noticias enriquecidas de ${c} revisadas`,
+    headSub: (o: number, time: string) => `${o} medios · últimas 48 horas · actualizado ${time} (hora de Colombia) · se renueva cada hora`,
+    sample: "Datos de ejemplo (modo sin conexión)",
+    toneAria: "Tono de las noticias filtradas", neg: "Negativas", neu: "Neutrales", pos: "Positivas",
+    topicsAria: "Temas", search: "Buscar", searchPh: "Palabra, medio…", person: "Protagonista", country: "País involucrado", outletCountry: "País del medio", sentiment: "Sentimiento", riskLabel: "Riesgo de mercado", all: "Todos",
+    count: (r: number, n: number) => `${r} de ${n} noticias`, clear: "Quitar filtros", csv: "↓ Descargar CSV",
+    cols: ["Medio", "Noticia y resumen", "Protagonistas", "Países", "Tema", "Sentimiento", "Riesgo"], newsCol: "Noticia",
+    state: "Estatal", pub: "Público", stateTitle: "Medio controlado o financiado por un Estado", pubTitle: "Medio público con independencia editorial",
+    none: "Ninguna noticia coincide con los filtros.",
+    help1: ["Sentimiento", " es el tono de la noticia (un acuerdo es positivo, un ataque es negativo). ", "Riesgo", " es si probablemente aumenta o reduce la incertidumbre que perciben los mercados. La clasificación es automática y puede equivocarse: abre la noticia original antes de sacar conclusiones. El país de cada medio está fijado a mano."],
+    outletsUsed: "Medios consultados:", noResponse: "Sin respuesta esta vez:",
+    csvHeader: ["fecha", "medio", "pais_medio", "tipo_medio", "titulo", "resumen", "personas", "paises", "tema", "subtema", "tono", "riesgo", "url"],
+    csvName: "noticias-enriquecidas", own: { estatal: "estatal", publico: "publico", privado: "privado" } as Record<string, string>,
+    locale: "es-CO",
+  },
+  en: {
+    tone: { positivo: "Positive", neutral: "Neutral", negativo: "Negative" } as Record<Tone, string>,
+    risk: { aumenta: "↑ Increases", neutral: "→ Neutral", disminuye: "↓ Decreases" } as Record<Risk, string>,
+    loading: (n: number, c: number) => [`Reading ${n} outlets from ${c} countries`, "Discarding anything that isn't geopolitics", "Summarizing and classifying with AI"],
+    loadingNote: "The first load each hour can take up to a minute. After that it's cached and opens instantly.",
+    errTitle: "Couldn't load the news", errGeneric: "Couldn't load the news. Try again in a few minutes.", errNet: "Couldn't load the news. Check your connection.", retry: "Retry",
+    headCount: (n: number, c: number) => `${n} enriched stories out of ${c} reviewed`,
+    headSub: (o: number, time: string) => `${o} outlets · last 48 hours · updated ${time} (Colombia time, UTC−5) · refreshes hourly`,
+    sample: "Sample data (offline mode)",
+    toneAria: "Tone of the filtered stories", neg: "Negative", neu: "Neutral", pos: "Positive",
+    topicsAria: "Topics", search: "Search", searchPh: "Word, outlet…", person: "Key person", country: "Country involved", outletCountry: "Outlet country", sentiment: "Sentiment", riskLabel: "Market risk", all: "All",
+    count: (r: number, n: number) => `${r} of ${n} stories`, clear: "Clear filters", csv: "↓ Download CSV",
+    cols: ["Outlet", "Story and summary", "Key people", "Countries", "Topic", "Sentiment", "Risk"], newsCol: "Story",
+    state: "State", pub: "Public", stateTitle: "Outlet controlled or funded by a government", pubTitle: "Public broadcaster with editorial independence",
+    none: "No stories match the filters.",
+    help1: ["Sentiment", " is the tone of the story (an agreement is positive, an attack is negative). ", "Risk", " is whether it likely increases or reduces the uncertainty markets perceive. Classification is automatic and can be wrong: open the original story before drawing conclusions. Each outlet's country is set by hand."],
+    outletsUsed: "Outlets checked:", noResponse: "No response this time:",
+    csvHeader: ["date", "outlet", "outlet_country", "outlet_type", "headline", "summary", "people", "countries", "topic", "subtopic", "tone", "risk", "url"],
+    csvName: "enriched-news", own: { estatal: "state", publico: "public", privado: "private" } as Record<string, string>,
+    locale: "en-US",
+  },
+};
+type T = (typeof TX)["es"];
 
-const timeFmt = new Intl.DateTimeFormat("es-CO", {
-  day: "numeric",
-  month: "short",
-  hour: "numeric",
-  minute: "2-digit",
-  timeZone: "America/Bogota",
-});
+const fmt = (lang: Lang) =>
+  new Intl.DateTimeFormat(TX[lang].locale, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone: "America/Bogota" });
 
 function csvCell(v: string) {
   return /[",\n;]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
 }
 
-function downloadCsv(rows: GeoItem[]) {
-  const header = ["fecha", "medio", "pais_medio", "tipo_medio", "titulo", "resumen", "personas", "paises", "tema", "subtema", "tono", "riesgo", "url"];
+function downloadCsv(rows: GeoItem[], lang: Lang) {
+  const t = TX[lang];
+  const header = t.csvHeader;
   const lines = rows.map((it) =>
     [
       it.date,
       it.outlet.name,
-      countryName(it.outlet.country),
-      it.outlet.ownership ?? "privado",
+      countryName(it.outlet.country, lang),
+      t.own[it.outlet.ownership ?? "privado"],
       it.title,
-      it.summary,
+      lang === "en" ? it.summaryEn : it.summary,
       it.people.join(" | "),
-      it.countries.map(countryName).join(" | "),
-      TOPICS[it.topic],
-      it.subtopic,
-      it.tone,
-      it.risk,
+      it.countries.map((c) => countryName(c, lang)).join(" | "),
+      topicLabel(it.topic, lang),
+      lang === "en" ? it.subtopicEn || it.subtopic : it.subtopic,
+      t.tone[it.tone].toLowerCase(),
+      t.risk[it.risk].replace(/^[^ ]+ /, "").toLowerCase(),
       it.url,
     ]
       .map(csvCell)
@@ -49,7 +89,7 @@ function downloadCsv(rows: GeoItem[]) {
   const blob = new Blob(["﻿" + [header.join(","), ...lines].join("\n")], { type: "text/csv;charset=utf-8" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = `noticias-enriquecidas-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `${t.csvName}-${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
   URL.revokeObjectURL(a.href);
 }
@@ -72,13 +112,14 @@ function matches(it: GeoItem, f: Filters) {
   if (f.risk && it.risk !== f.risk) return false;
   if (f.text) {
     const q = f.text.toLowerCase();
-    const hay = `${it.title} ${it.summary} ${it.subtopic} ${it.outlet.name}`.toLowerCase();
+    const hay = `${it.title} ${it.summary} ${it.summaryEn} ${it.subtopic} ${it.subtopicEn} ${it.outlet.name}`.toLowerCase();
     if (!hay.includes(q)) return false;
   }
   return true;
 }
 
-export default function GeoDemo() {
+export default function GeoDemo({ lang = "es" }: { lang?: Lang }) {
+  const t = TX[lang];
   const [state, setState] = useState<{ status: "loading" } | { status: "error"; message: string } | { status: "ok"; data: Data }>({ status: "loading" });
 
   useEffect(() => {
@@ -88,23 +129,23 @@ export default function GeoDemo() {
         const j = await r.json().catch(() => null);
         if (!alive) return;
         if (r.ok && j?.ok) setState({ status: "ok", data: j });
-        else setState({ status: "error", message: j?.error ?? "No se pudieron cargar las noticias. Intenta en unos minutos." });
+        else setState({ status: "error", message: lang === "en" ? t.errGeneric : (j?.error ?? t.errGeneric) });
       })
-      .catch(() => alive && setState({ status: "error", message: "No se pudieron cargar las noticias. Revisa tu conexión." }));
+      .catch(() => alive && setState({ status: "error", message: t.errNet }));
     return () => {
       alive = false;
     };
-  }, []);
+  }, [lang, t]);
 
   if (state.status === "loading") {
     return (
       <div className="geo geo-loading" aria-busy="true">
         <div className="geo-steps">
-          <div className="on"><i /> Leyendo {OUTLETS.length} medios de {N_COUNTRIES} países</div>
-          <div className="on d2"><i /> Descartando lo que no es geopolítica</div>
-          <div className="on d3"><i /> Resumiendo y clasificando con IA</div>
+          {t.loading(OUTLETS.length, N_COUNTRIES).map((x, k) => (
+            <div key={x} className={`on${k ? ` d${k + 1}` : ""}`}><i /> {x}</div>
+          ))}
         </div>
-        <p>La primera carga de cada hora puede tardar hasta un minuto. Después queda guardada y abre al instante.</p>
+        <p>{t.loadingNote}</p>
         <div className="geo-skel">
           {Array.from({ length: 6 }, (_, k) => (
             <span key={k} />
@@ -116,16 +157,17 @@ export default function GeoDemo() {
   if (state.status === "error") {
     return (
       <div className="geo geo-error" role="alert">
-        <b>No se pudieron cargar las noticias</b>
+        <b>{t.errTitle}</b>
         <p>{state.message}</p>
-        <button className="hk-btn hk-btn-primary hk-btn-sm" onClick={() => location.reload()}>Reintentar</button>
+        <button className="hk-btn hk-btn-primary hk-btn-sm" onClick={() => location.reload()}>{t.retry}</button>
       </div>
     );
   }
-  return <GeoTable data={state.data} />;
+  return <GeoTable data={state.data} lang={lang} t={t} />;
 }
 
-function GeoTable({ data }: { data: Data }) {
+function GeoTable({ data, lang, t }: { data: Data; lang: Lang; t: T }) {
+  const timeFmt = fmt(lang);
   const [f, setF] = useState<Filters>(EMPTY);
   const set = (k: keyof Filters) => (v: string) => setF((p) => ({ ...p, [k]: v }));
 
@@ -145,71 +187,65 @@ function GeoTable({ data }: { data: Data }) {
     <div className="geo">
       <div className="geo-head">
         <div>
-          <b>
-            {data.items.length} noticias enriquecidas de {data.candidates} revisadas
-          </b>
-          <span>
-            {ok.length} medios · últimas 48 horas · actualizado {timeFmt.format(new Date(data.generatedAt))} (hora de Colombia) · se renueva cada hora
-          </span>
-          {data.sample && <em>Datos de ejemplo (modo sin conexión)</em>}
+          <b>{t.headCount(data.items.length, data.candidates)}</b>
+          <span>{t.headSub(ok.length, timeFmt.format(new Date(data.generatedAt)))}</span>
+          {data.sample && <em>{t.sample}</em>}
         </div>
-        <div className="geo-tones" aria-label="Tono de las noticias filtradas">
-          <div className="t-neg"><b>{toneN("negativo")}</b><span>Negativas</span></div>
-          <div className="t-neu"><b>{toneN("neutral")}</b><span>Neutrales</span></div>
-          <div className="t-pos"><b>{toneN("positivo")}</b><span>Positivas</span></div>
+        <div className="geo-tones" aria-label={t.toneAria}>
+          <div className="t-neg"><b>{toneN("negativo")}</b><span>{t.neg}</span></div>
+          <div className="t-neu"><b>{toneN("neutral")}</b><span>{t.neu}</span></div>
+          <div className="t-pos"><b>{toneN("positivo")}</b><span>{t.pos}</span></div>
         </div>
       </div>
 
-      <div className="geo-topics" aria-label="Temas">
-        {topics.map(([t, n]) => (
-          <button key={t} type="button" aria-pressed={f.topic === t} className={f.topic === t ? "on" : ""} onClick={() => set("topic")(f.topic === t ? "" : t)}>
-            {TOPICS[t as Topic]} <i>{n}</i>
+      <div className="geo-topics" aria-label={t.topicsAria}>
+        {topics.map(([tp, n]) => (
+          <button key={tp} type="button" aria-pressed={f.topic === tp} className={f.topic === tp ? "on" : ""} onClick={() => set("topic")(f.topic === tp ? "" : tp)}>
+            {topicLabel(tp as Topic, lang)} <i>{n}</i>
           </button>
         ))}
       </div>
 
       <div className="geo-filters">
         <label className="dm-field">
-          <span>Buscar</span>
-          <input value={f.text} onChange={(e) => set("text")(e.target.value)} placeholder="Palabra, medio…" />
+          <span>{t.search}</span>
+          <input value={f.text} onChange={(e) => set("text")(e.target.value)} placeholder={t.searchPh} />
         </label>
-        <Select label="Protagonista" value={f.person} onChange={set("person")}>
+        <Select all={t.all} label={t.person} value={f.person} onChange={set("person")}>
           {people.map(([p, n]) => (
             <option key={p} value={p}>{p} ({n})</option>
           ))}
         </Select>
-        <Select label="País involucrado" value={f.country} onChange={set("country")}>
+        <Select all={t.all} label={t.country} value={f.country} onChange={set("country")}>
           {countries.map(([c, n]) => (
-            <option key={c} value={c}>{flag(c)} {countryName(c)} ({n})</option>
+            <option key={c} value={c}>{flag(c)} {countryName(c, lang)} ({n})</option>
           ))}
         </Select>
-        <Select label="País del medio" value={f.outletCountry} onChange={set("outletCountry")}>
+        <Select all={t.all} label={t.outletCountry} value={f.outletCountry} onChange={set("outletCountry")}>
           {outletCountries.map(([c, n]) => (
-            <option key={c} value={c}>{flag(c)} {countryName(c)} ({n})</option>
+            <option key={c} value={c}>{flag(c)} {countryName(c, lang)} ({n})</option>
           ))}
         </Select>
-        <Select label="Sentimiento" value={f.tone} onChange={set("tone")}>
-          {Object.entries(TONE_LABEL).map(([k, v]) => (
+        <Select all={t.all} label={t.sentiment} value={f.tone} onChange={set("tone")}>
+          {Object.entries(t.tone).map(([k, v]) => (
             <option key={k} value={k}>{v}</option>
           ))}
         </Select>
-        <Select label="Riesgo de mercado" value={f.risk} onChange={set("risk")}>
-          {Object.entries(RISK_LABEL).map(([k, v]) => (
+        <Select all={t.all} label={t.riskLabel} value={f.risk} onChange={set("risk")}>
+          {Object.entries(t.risk).map(([k, v]) => (
             <option key={k} value={k}>{v}</option>
           ))}
         </Select>
       </div>
 
       <div className="geo-bar">
-        <span>
-          {rows.length} de {data.items.length} noticias
-        </span>
+        <span>{t.count(rows.length, data.items.length)}</span>
         <span className="geo-actions">
           {active && (
-            <button type="button" className="hk-btn hk-btn-sm hk-btn-ghost" onClick={() => setF(EMPTY)}>Quitar filtros</button>
+            <button type="button" className="hk-btn hk-btn-sm hk-btn-ghost" onClick={() => setF(EMPTY)}>{t.clear}</button>
           )}
-          <button type="button" className="hk-btn hk-btn-sm hk-btn-primary" onClick={() => downloadCsv(rows)} disabled={!rows.length}>
-            ↓ Descargar CSV
+          <button type="button" className="hk-btn hk-btn-sm hk-btn-primary" onClick={() => downloadCsv(rows, lang)} disabled={!rows.length}>
+            {t.csv}
           </button>
           <a className="hk-btn hk-btn-sm" href="/api/geo" target="_blank" rel="noopener noreferrer">JSON</a>
         </span>
@@ -219,49 +255,45 @@ function GeoTable({ data }: { data: Data }) {
         <table className="geo-table">
           <thead>
             <tr>
-              <th>Medio</th>
-              <th>Noticia y resumen</th>
-              <th>Protagonistas</th>
-              <th>Países</th>
-              <th>Tema</th>
-              <th>Sentimiento</th>
-              <th>Riesgo</th>
+              {t.cols.map((c) => (
+                <th key={c}>{c}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {rows.map((it) => (
               <tr key={it.id}>
-                <td className="c-outlet" data-label="Medio">
+                <td className="c-outlet" data-label={t.cols[0]}>
                   <b>{it.outlet.name}</b>
-                  <span>{flag(it.outlet.country)} {countryName(it.outlet.country)}</span>
+                  <span>{flag(it.outlet.country)} {countryName(it.outlet.country, lang)}</span>
                   {it.outlet.ownership && (
-                    <em title={it.outlet.ownership === "estatal" ? "Medio controlado o financiado por un Estado" : "Medio público con independencia editorial"}>
-                      {it.outlet.ownership === "estatal" ? "Estatal" : "Público"}
+                    <em title={it.outlet.ownership === "estatal" ? t.stateTitle : t.pubTitle}>
+                      {it.outlet.ownership === "estatal" ? t.state : t.pub}
                     </em>
                   )}
                   <small>{timeFmt.format(new Date(it.date))}</small>
                 </td>
-                <td className="c-news" data-label="Noticia">
+                <td className="c-news" data-label={t.newsCol}>
                   <a href={it.url} target="_blank" rel="noopener noreferrer">{it.title}</a>
-                  <p>{it.summary}</p>
+                  <p>{lang === "en" ? it.summaryEn : it.summary}</p>
                 </td>
-                <td data-label="Protagonistas">
+                <td data-label={t.cols[2]}>
                   {it.people.length ? <ul>{it.people.map((p) => <li key={p}>{p}</li>)}</ul> : <span className="muted">—</span>}
                 </td>
-                <td data-label="Países">
-                  <ul>{it.countries.map((c) => <li key={c}>{flag(c)} {countryName(c)}</li>)}</ul>
+                <td data-label={t.cols[3]}>
+                  <ul>{it.countries.map((c) => <li key={c}>{flag(c)} {countryName(c, lang)}</li>)}</ul>
                 </td>
-                <td data-label="Tema">
-                  <div>{TOPICS[it.topic]}</div>
-                  {it.subtopic && <small className="muted">{it.subtopic}</small>}
+                <td data-label={t.cols[4]}>
+                  <div>{topicLabel(it.topic, lang)}</div>
+                  {(lang === "en" ? it.subtopicEn || it.subtopic : it.subtopic) && <small className="muted">{lang === "en" ? it.subtopicEn || it.subtopic : it.subtopic}</small>}
                 </td>
-                <td data-label="Sentimiento"><span className={`geo-pill tone-${it.tone}`}>{TONE_LABEL[it.tone]}</span></td>
-                <td data-label="Riesgo"><span className={`geo-risk risk-${it.risk}`}>{RISK_LABEL[it.risk]}</span></td>
+                <td data-label={t.cols[5]}><span className={`geo-pill tone-${it.tone}`}>{t.tone[it.tone]}</span></td>
+                <td data-label={t.cols[6]}><span className={`geo-risk risk-${it.risk}`}>{t.risk[it.risk]}</span></td>
               </tr>
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="geo-none">Ninguna noticia coincide con los filtros.</td>
+                <td colSpan={7} className="geo-none">{t.none}</td>
               </tr>
             )}
           </tbody>
@@ -270,23 +302,23 @@ function GeoTable({ data }: { data: Data }) {
 
       <div className="geo-foot">
         <p>
-          <b>Sentimiento</b> es el tono de la noticia (un acuerdo es positivo, un ataque es negativo). <b>Riesgo</b> es si probablemente aumenta o reduce la incertidumbre que perciben los mercados. La clasificación es automática y puede equivocarse: abre la noticia original antes de sacar conclusiones. El país de cada medio está fijado a mano.
+          <b>{t.help1[0]}</b>{t.help1[1]}<b>{t.help1[2]}</b>{t.help1[3]}
         </p>
         <p>
-          Medios consultados: {data.outlets.map((o) => `${o.name} (${o.used})`).join(", ")}.
-          {failed.length > 0 && <> Sin respuesta esta vez: {failed.map((o) => o.name).join(", ")}.</>}
+          {t.outletsUsed} {data.outlets.map((o) => `${o.name} (${o.used})`).join(", ")}.
+          {failed.length > 0 && <> {t.noResponse} {failed.map((o) => o.name).join(", ")}.</>}
         </p>
       </div>
     </div>
   );
 }
 
-function Select({ label, value, onChange, children }: { label: string; value: string; onChange: (v: string) => void; children: React.ReactNode }) {
+function Select({ label, value, onChange, children, all }: { label: string; value: string; onChange: (v: string) => void; children: React.ReactNode; all: string }) {
   return (
     <label className="dm-field">
       <span>{label}</span>
       <select value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value="">Todos</option>
+        <option value="">{all}</option>
         {children}
       </select>
     </label>

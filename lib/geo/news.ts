@@ -44,7 +44,7 @@ async function readOutlet(o: Outlet): Promise<{ items: FeedItem[]; error?: strin
 }
 
 const SYSTEM = `Eres un analista de geopolítica que estructura noticias para análisis de datos.
-Respondes siempre en español y solo con un objeto JSON válido.
+Respondes en español (y en inglés solo en los campos que terminan en _en) y solo con un objeto JSON válido.
 Usa únicamente el título y la descripción de cada noticia; no agregues hechos que sepas por otra vía.
 Describe sin tomar partido: el tono es el de la noticia, no tu opinión sobre las personas o los países.`;
 
@@ -64,10 +64,12 @@ Para cada noticia devuelve un elemento en "items":
  energía, diplomacia, elecciones o política de un país con efecto internacional; false si es local, sucesos,
  deportes, farándula, ciencia o consumo,
  "summary": "1 o 2 frases en español con lo esencial",
+ "summary_en": "el mismo resumen en inglés",
  "people": ["personas protagonistas, nombre y apellido como se conocen en español, máximo 4"],
  "countries": ["códigos ISO 3166-1 alfa-2 de los países involucrados, EU para la Unión Europea, máximo 6"],
  "topic": uno de ${topics},
  "subtopic": "2 a 4 palabras en español, p. ej. Guerra en Ucrania, Aranceles de EE. UU.",
+ "subtopic_en": "el mismo subtema en inglés, p. ej. War in Ukraine, US tariffs",
  "tone": "positivo" | "neutral" | "negativo",
  "risk": "aumenta" | "neutral" | "disminuye" (si la noticia sube o baja la incertidumbre que perciben los mercados)}
 
@@ -81,7 +83,7 @@ async function classify(batch: { o: Outlet; item: FeedItem }[]): Promise<Classif
       { role: "system", content: SYSTEM },
       { role: "user", content: prompt(batch) },
     ],
-    { json: true, temperature: 0.1, maxTokens: 3500 },
+    { json: true, temperature: 0.1, maxTokens: 5000 },
   );
   return parseClassification(raw, batch.length);
 }

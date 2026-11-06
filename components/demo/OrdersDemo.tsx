@@ -11,6 +11,7 @@ import {
   productName,
   type Line,
   type Order,
+  type Lang,
 } from "@/lib/demo/data";
 import { matchClient, priceLines, type Match } from "@/lib/demo/match";
 
@@ -35,7 +36,49 @@ function save(s: Saved) {
   }
 }
 
-const t = {
+const TX = {
+  en: {
+    tab1: "1 · Restaurant",
+    tab1b: "Place an order",
+    tab2: "2 · Back office",
+    tab2b: "Match, price & invoice",
+    nameLabel: "Your restaurant",
+    nameHint: "Pick one of the clients below or type it yourself. Typos and missing words are fine: try “forno chico” or “mirador”, or a name that isn’t a client.",
+    clientsTitle: (n: number, c: number) => `Our clients: ${n} points of sale from ${c} companies`,
+    namePh: "e.g. forno chico",
+    delivery: "Delivery date",
+    products: "Products",
+    noPrices: "Restaurants don’t see prices here; the back office applies each client’s own price list.",
+    cats: { yogurt: "Yogurts & kumis", cheese: "Cheeses", butter: "Butter & cream", milk: "Milk & milk powder", sweets: "Condensed milk & arequipe" } as Record<string, string>,
+    unit: { kg: "kg", unit: "" },
+    yourOrder: "Your order",
+    empty: "Add at least one product.",
+    send: "Send order",
+    needName: "Write the restaurant name.",
+    sent: (id: string) => `Order ${id} sent. Here is what the back office sees:`,
+    stats: ["Orders", "Matched automatically", "Need review", "Not found", "Ready to invoice"],
+    typed: "Typed",
+    matched: "Matched point",
+    legal: "Legal entity",
+    list: "List",
+    noMatch: "No client found. The system never guesses: someone has to create the client or call the restaurant.",
+    review: "Low confidence. Check that this is the right client before invoicing.",
+    confirm: "Confirm match",
+    missingPrice: (n: number) => `${n} product(s) are not in this client’s price list. They are left out of the invoice and flagged.`,
+    notInList: "not in price list",
+    invoice: "Invoice PDF",
+    invoiced: "Invoiced",
+    placed: "Placed",
+    deliver: "Delivery",
+    yours: "Your order",
+    total: "Total",
+    csv: "Download all lines (Excel)",
+    reset: "Reset demo",
+    resetDone: "Demo reset.",
+    similarity: "similarity",
+    status: { ok: "Auto-matched", review: "Review", notfound: "Not found" },
+  },
+  es: {
     tab1: "1 · Restaurante",
     tab1b: "Hacer un pedido",
     tab2: "2 · Back office",
@@ -75,8 +118,8 @@ const t = {
     resetDone: "Demo reiniciada.",
     similarity: "similitud",
     status: { ok: "Cruce automático", review: "Revisar", notfound: "No encontrado" },
-  };
-
+  },
+};
 
 type Row = { order: Order; match: Match; confirmed: boolean };
 
@@ -84,8 +127,8 @@ const POINTS = DATA.clients
   .flatMap((c) => c.points.map((point) => ({ point, legal: c.legalName })))
   .sort((a, b) => a.point.localeCompare(b.point, "es"));
 
-export default function OrdersDemo() {
-  const lang = "es" as const;
+export default function OrdersDemo({ lang = "es" }: { lang?: Lang }) {
+  const t = TX[lang];
   const [tab, setTab] = useState<1 | 2>(1);
   const [saved, setSaved] = useState<Saved>(EMPTY);
   const [flash, setFlash] = useState<string | null>(null);

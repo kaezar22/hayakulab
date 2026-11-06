@@ -1,6 +1,6 @@
 # Hayaku Lab · www.hayakulab.com
 
-Sitio web de Hayaku Lab: automatización con IA para pymes.
+Sitio web de Hayaku Lab: automatización con IA para pymes. En español (`/`) e inglés (`/en`), con un botón ES / EN en el menú.
 
 - **Inicio** (`/`): hero, servicios, demos, testimonios, proceso, preguntas frecuentes y contacto.
 - **Demo Pedidos por QR** (`/demos/pedidos-qr`): celular del cliente + tablero del bar, todo en el navegador (basado en `gigs/qr_space`).
@@ -16,11 +16,21 @@ Stack: Next.js 16 (App Router), React 19, TypeScript. Sin base de datos: las dem
 | Correo, WhatsApp, enlace de agenda, testimonios | `lib/site.ts` |
 | Lo que sabe el chatbot (servicios, precios, contacto) | `lib/knowledge.ts` |
 | Instrucciones y límites del chatbot | `app/api/chat/route.ts` |
-| Textos de la página de inicio | `app/page.tsx` |
+| Medios y temas de la demo de enriquecimiento | `lib/geo/outlets.ts`, `lib/geo/classify.ts` |
+| Textos de la página de inicio (español e inglés) | `components/Home.tsx` (objeto `C`) |
+| Textos de las páginas de demo (español e inglés) | `components/demo/DemoPages.tsx` |
+| Textos dentro de cada demo | objeto `TX` al inicio de cada archivo en `components/demo/` |
+| Menú, pie de página y botón de idioma | `components/Chrome.tsx`, `components/LangSwitch.tsx` |
 | Colores y estilos (`:root` arriba) | `app/globals.css` |
 | Menú de la demo QR | `components/demo/QrDemo.tsx` (`MENU`) |
 | Datos de la demo B2B | `data/demo/lacteos.json` |
 | Logo, favicon, imagen para redes | `public/logo-mark*.png`, `app/icon.png`, `app/opengraph-image.jpg` |
+
+## Idiomas
+
+- Español vive en `app/(es)/` y se sirve en la raíz; inglés vive en `app/(en)/en/` y se sirve bajo `/en`. Cada idioma tiene su propio layout raíz (para que `<html lang>` sea correcto).
+- Las rutas de `app/` solo llaman a los componentes con `lang="es"` o `lang="en"`: los textos de ambos idiomas están juntos en el mismo componente.
+- Al agregar una página nueva, crea la ruta en los dos grupos y agrégala a `app/sitemap.ts`.
 
 ## Correr en tu computador
 

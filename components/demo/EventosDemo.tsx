@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
+import { href, type Lang } from "@/lib/i18n";
 
 // Simulación en el navegador de QR Eventos: artista → seguidores → puerta.
 // En el sistema real todo queda en Google Sheets y la puerta escanea con la cámara.
@@ -14,7 +15,7 @@ type Result =
 
 const EVENTO = "Noche Neón · Teatro Royal";
 const OTRO_EVENTO = "Festival Sabana Sound";
-const REDES = ["TikTok", "Instagram", "YouTube", "X / Twitter", "Otra"];
+const REDES = ["TikTok", "Instagram", "YouTube", "X / Twitter"];
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$/;
 const ABC = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const nuevoId = (n: number) => Array.from({ length: n }, () => ABC[Math.floor(Math.random() * ABC.length)]).join("");
@@ -22,12 +23,18 @@ const hora = () => new Date().toLocaleTimeString("es-CO", { hour: "2-digit", min
 
 const NOMBRES = ["Lucía Navarro", "Andrés Pérez", "Camila Rojas", "Julián Torres", "Sofía Herrera", "Mateo Díaz", "Valentina Cruz", "Santiago Mora", "Isabela Ruiz", "Tomás Vargas", "Mariana León", "Felipe Castro", "Daniela Ortiz", "Nicolás Ríos", "Paula Méndez", "Sebastián Gil"];
 
-function seed(): { invs: Inv[]; regs: Reg[] } {
+const PERKS = {
+  es: ["Cóctel de bienvenida", "10% de descuento en consumo", "Entrada preferencial"],
+  en: ["Welcome cocktail", "10% off food and drinks", "Fast-track entry"],
+};
+
+function seed(lang: Lang = "es"): { invs: Inv[]; regs: Reg[] } {
+  const P = PERKS[lang];
   const fecha = new Date(Date.now() + 9 * 86400000).toISOString().slice(0, 10);
   const invs: Inv[] = [
-    { id: "VR7K2M", artista: "Valen Ríos", red: "Instagram", usuario: "@valenrios", evento: EVENTO, fecha, beneficio: "Cóctel de bienvenida" },
-    { id: "TN4P8Q", artista: "MC Tano", red: "TikTok", usuario: "@mctano", evento: EVENTO, fecha, beneficio: "10% de descuento en consumo" },
-    { id: "SB9X3L", artista: "Luna Beats", red: "TikTok", usuario: "@lunabeats", evento: OTRO_EVENTO, fecha, beneficio: "Entrada preferencial" },
+    { id: "VR7K2M", artista: "Valen Ríos", red: "Instagram", usuario: "@valenrios", evento: EVENTO, fecha, beneficio: P[0] },
+    { id: "TN4P8Q", artista: "MC Tano", red: "TikTok", usuario: "@mctano", evento: EVENTO, fecha, beneficio: P[1] },
+    { id: "SB9X3L", artista: "Luna Beats", red: "TikTok", usuario: "@lunabeats", evento: OTRO_EVENTO, fecha, beneficio: P[2] },
   ];
   const regs: Reg[] = [];
   const plan: [string, number, number][] = [["VR7K2M", 9, 6], ["TN4P8Q", 6, 3], ["SB9X3L", 1, 0]];
@@ -50,13 +57,13 @@ function seed(): { invs: Inv[]; regs: Reg[] } {
   return { invs, regs };
 }
 
-function QrImg({ text, size = 180 }: { text: string; size?: number }) {
+function QrImg({ text, size = 180, alt = "QR" }: { text: string; size?: number; alt?: string }) {
   const [src, setSrc] = useState("");
   useEffect(() => {
     QRCode.toDataURL(text, { margin: 1, width: size * 2, color: { dark: "#150E48", light: "#FFFFFF" } }).then(setSrc).catch(() => {});
   }, [text, size]);
   // eslint-disable-next-line @next/next/no-img-element
-  return src ? <img src={src} alt={`Código QR: ${text}`} width={size} height={size} className="ev-qr" /> : <div className="ev-qr" style={{ width: size, height: size }} />;
+  return src ? <img src={src} alt={`${alt}: ${text}`} width={size} height={size} className="ev-qr" /> : <div className="ev-qr" style={{ width: size, height: size }} />;
 }
 
 function download(dataText: string, name: string) {
@@ -68,14 +75,86 @@ function download(dataText: string, name: string) {
   });
 }
 
-export default function EventosDemo() {
-  const [data, setData] = useState(seed);
+const TX = {
+  es: {
+    other: "Otra", qrAlt: "Código QR",
+    errArtist: "Escribe tu nombre artístico.", errEmail: "Escribe un correo válido.", errName: "Escribe tu nombre.", errPhone: "Escribe un celular válido.",
+    errConsent: "Debes aceptar la política de tratamiento de datos para registrarte.",
+    tabs: [["1 · Artista", "Crea su invitación"], ["2 · Seguidor", "Se registra y recibe su QR"], ["3 · Puerta", "Escanea y cuenta asistencia"]],
+    artistTitle: "🎟️ Invita a tus seguidores",
+    artistLead: "Crea tu invitación para el evento. Te damos un link y un QR para compartir en TikTok o Instagram. Cada seguidor que se registre queda contado a tu nombre.",
+    stageName: "Nombre artístico *", stageNamePh: "Ej: DJ Kaori", network: "Red social", user: "Usuario", userPh: "@tu_usuario", yourEmail: "Tu correo *", emailPh: "tu@correo.com",
+    event: "Evento", perk: "Beneficio para tus seguidores", generate: "Generar mi QR",
+    artistOk: (n: string) => `¡Listo, ${n}! Comparte este link o este QR.`, downloadQr: "↓ Descargar QR", openAsFollower: "Abrir como seguidor →",
+    inviteCode: "Código de tu invitación:", inviteCodeAfter: ". Con él sabremos cuántas personas llegaron por ti.",
+    emptyArtist: "Aquí aparecerá tu link y tu QR para compartir.",
+    inviteOf: "Invitación de", yourPerk: "Tu beneficio:",
+    exampleNote: "Estás viendo la invitación de ejemplo de MC Tano. Crea la tuya en la pestaña “Artista” para verla aquí.",
+    signupLead: "Regístrate para recibir tu QR personal. Lo mostrarás en la entrada del evento.",
+    fullName: "Nombre completo *", email: "Correo electrónico *", phone: "Celular *", phonePh: "300 123 4567",
+    readPolicy: "Leer la política de tratamiento de datos",
+    policy: "Tus datos (nombre, correo y celular) se usan solo para enviarte tu QR, validar tu ingreso al evento, aplicar tu beneficio y contar la asistencia por artista, conforme a la Ley 1581 de 2012. Puedes consultar, actualizar o pedir que se eliminen tus datos en cualquier momento.",
+    policyNote: "(Texto de ejemplo para la demo.)",
+    consent: "Autorizo el tratamiento de mis datos personales según la política de tratamiento de datos. *",
+    getQr: "Obtener mi QR", another: "+ Registrar otro seguidor", simulate: "Simular 5 seguidores más",
+    already: "Ya estabas registrado con este correo. Este es tu QR.", followerOk: (n: string) => `¡Listo, ${n}! Este es tu QR personal.`,
+    sentTo: "📧 También te lo enviamos a", code: "Código:", downloadMine: "↓ Descargar mi QR", toDoor: "Ir a la puerta →",
+    personalNote: "Es personal: solo sirve para un ingreso.", emptyFollower: "Aquí aparecerá el QR personal del seguidor.",
+    door: "🚪 Puerta ·", doorLead: "En el evento, el portero escanea con la cámara del celular. Aquí toca un pase para “escanearlo”, o escribe un código.",
+    otherEvent: " · otro evento", yours: "Tuyo", codePh: "Código del QR, ej. F5MZJ7PVHP", codeAria: "Código del QR", validate: "Validar",
+    waiting: "Esperando un QR…",
+    okTitle: (n: string) => `✅ Bienvenido/a, ${n}`, okBy: "Viene por", codeWord: "código",
+    usedTitle: "⛔ Este QR ya ingresó", usedText: (n: string, a: string) => `${n} (${a}) entró a las `,
+    otherTitle: "⚠️ QR de otro evento", otherText: (n: string) => `${n} está registrado para `,
+    nfTitle: "❌ Código no encontrado", nfText: " no está registrado.", invalid: "❌ Este QR no es de QR Eventos",
+    attendance: "Asistencia por artista", checkedIn: "Ingresaron", registered: "Registrados", you: "Tú", reset: "↺ Reiniciar demo",
+    dl: "mi_qr",
+  },
+  en: {
+    other: "Other", qrAlt: "QR code",
+    errArtist: "Enter your stage name.", errEmail: "Enter a valid email.", errName: "Enter your name.", errPhone: "Enter a valid phone number.",
+    errConsent: "You must accept the data privacy policy to sign up.",
+    tabs: [["1 · Artist", "Creates an invitation"], ["2 · Follower", "Signs up and gets a QR code"], ["3 · Door", "Scans and counts attendance"]],
+    artistTitle: "🎟️ Invite your followers",
+    artistLead: "Create your invitation for the event. You get a link and a QR code to share on TikTok or Instagram. Every follower who signs up is counted under your name.",
+    stageName: "Stage name *", stageNamePh: "e.g. DJ Kaori", network: "Social network", user: "Handle", userPh: "@your_handle", yourEmail: "Your email *", emailPh: "you@email.com",
+    event: "Event", perk: "Perk for your followers", generate: "Get my QR code",
+    artistOk: (n: string) => `All set, ${n}! Share this link or QR code.`, downloadQr: "↓ Download QR", openAsFollower: "Open as a follower →",
+    inviteCode: "Your invitation code:", inviteCodeAfter: ". It's how we'll know how many people came for you.",
+    emptyArtist: "Your link and QR code to share will appear here.",
+    inviteOf: "Invited by", yourPerk: "Your perk:",
+    exampleNote: "You're viewing MC Tano's sample invitation. Create your own in the “Artist” tab to see it here.",
+    signupLead: "Sign up to get your personal QR code. You'll show it at the event entrance.",
+    fullName: "Full name *", email: "Email *", phone: "Phone *", phonePh: "555 123 4567",
+    readPolicy: "Read the data privacy policy",
+    policy: "Your data (name, email and phone) is used only to send you your QR code, validate your entry, apply your perk and count attendance by artist, in line with Colombian data protection law (Ley 1581 of 2012). You can view, update or ask us to delete your data at any time.",
+    policyNote: "(Sample text for the demo.)",
+    consent: "I authorize the processing of my personal data under the data privacy policy. *",
+    getQr: "Get my QR code", another: "+ Register another follower", simulate: "Simulate 5 more followers",
+    already: "You were already signed up with this email. Here's your QR code.", followerOk: (n: string) => `All set, ${n}! Here's your personal QR code.`,
+    sentTo: "📧 We also sent it to", code: "Code:", downloadMine: "↓ Download my QR", toDoor: "Go to the door →",
+    personalNote: "It's personal: valid for one entry only.", emptyFollower: "The follower's personal QR code will appear here.",
+    door: "🚪 Door ·", doorLead: "At the event, staff scan with their phone camera. Here, tap a pass to “scan” it, or type a code.",
+    otherEvent: " · other event", yours: "Yours", codePh: "QR code, e.g. F5MZJ7PVHP", codeAria: "QR code", validate: "Validate",
+    waiting: "Waiting for a QR code…",
+    okTitle: (n: string) => `✅ Welcome, ${n}`, okBy: "Here for", codeWord: "code",
+    usedTitle: "⛔ This QR code was already used", usedText: (n: string, a: string) => `${n} (${a}) checked in at `,
+    otherTitle: "⚠️ QR code for another event", otherText: (n: string) => `${n} is registered for `,
+    nfTitle: "❌ Code not found", nfText: " is not registered.", invalid: "❌ This is not a QR Events code",
+    attendance: "Attendance by artist", checkedIn: "Checked in", registered: "Signed up", you: "You", reset: "↺ Reset demo",
+    dl: "my_qr",
+  },
+};
+
+export default function EventosDemo({ lang = "es" }: { lang?: Lang }) {
+  const t = TX[lang];
+  const [data, setData] = useState(() => seed(lang));
   const [tab, setTab] = useState<1 | 2 | 3>(1);
   const [origin, setOrigin] = useState("https://www.hayakulab.com");
   useEffect(() => setOrigin(window.location.origin), []);
 
   // --- Artista
-  const [fa, setFa] = useState({ artista: "", red: "TikTok", usuario: "", email: "", beneficio: "10% de descuento en consumo" });
+  const [fa, setFa] = useState({ artista: "", red: "TikTok", usuario: "", email: "", beneficio: PERKS[lang][1] });
   const [errA, setErrA] = useState<string[]>([]);
   const [miInv, setMiInv] = useState<Inv | null>(null);
 
@@ -93,8 +172,8 @@ export default function EventosDemo() {
 
   function crearInvitacion() {
     const e: string[] = [];
-    if (!fa.artista.trim()) e.push("Escribe tu nombre artístico.");
-    if (!EMAIL_RE.test(fa.email.trim())) e.push("Escribe un correo válido.");
+    if (!fa.artista.trim()) e.push(t.errArtist);
+    if (!EMAIL_RE.test(fa.email.trim())) e.push(t.errEmail);
     setErrA(e);
     if (e.length) return;
     const fecha = new Date(Date.now() + 9 * 86400000).toISOString().slice(0, 10);
@@ -107,10 +186,10 @@ export default function EventosDemo() {
   function registrar() {
     const e: string[] = [];
     const cel = fs.celular.replace(/\D/g, "");
-    if (!fs.nombre.trim()) e.push("Escribe tu nombre.");
-    if (!EMAIL_RE.test(fs.email.trim())) e.push("Escribe un correo válido.");
-    if (cel.length < 7 || cel.length > 15) e.push("Escribe un celular válido.");
-    if (!fs.acepta) e.push("Debes aceptar la política de tratamiento de datos para registrarte.");
+    if (!fs.nombre.trim()) e.push(t.errName);
+    if (!EMAIL_RE.test(fs.email.trim())) e.push(t.errEmail);
+    if (cel.length < 7 || cel.length > 15) e.push(t.errPhone);
+    if (!fs.acepta) e.push(t.errConsent);
     setErrS(e);
     if (e.length) return;
     const email = fs.email.trim().toLowerCase();
@@ -171,11 +250,7 @@ export default function EventosDemo() {
     return [...mios, ...pendientes, ...(yaEntro ? [yaEntro] : []), ...(otro ? [otro] : [])];
   }, [data]);
 
-  const tabs = [
-    { n: 1 as const, t: "1 · Artista", s: "Crea su invitación" },
-    { n: 2 as const, t: "2 · Seguidor", s: "Se registra y recibe su QR" },
-    { n: 3 as const, t: "3 · Puerta", s: "Escanea y cuenta asistencia" },
-  ];
+  const tabs = t.tabs.map(([title, sub], k) => ({ n: (k + 1) as 1 | 2 | 3, t: title, s: sub }));
 
   return (
     <div className="ev">
@@ -192,61 +267,61 @@ export default function EventosDemo() {
       {tab === 1 && (
         <div className="dm-panel ev-split">
           <div>
-            <h3 className="ev-h">🎟️ Invita a tus seguidores</h3>
-            <p className="dm-muted">Crea tu invitación para el evento. Te damos un link y un QR para compartir en TikTok o Instagram. Cada seguidor que se registre queda contado a tu nombre.</p>
+            <h3 className="ev-h">{t.artistTitle}</h3>
+            <p className="dm-muted">{t.artistLead}</p>
             <div className="ev-form">
               <label className="dm-field">
-                <span>Nombre artístico *</span>
-                <input value={fa.artista} onChange={(e) => setFa({ ...fa, artista: e.target.value })} placeholder="Ej: DJ Kaori" maxLength={40} />
+                <span>{t.stageName}</span>
+                <input value={fa.artista} onChange={(e) => setFa({ ...fa, artista: e.target.value })} placeholder={t.stageNamePh} maxLength={40} />
               </label>
               <div className="ev-row">
                 <label className="dm-field">
-                  <span>Red social</span>
+                  <span>{t.network}</span>
                   <select value={fa.red} onChange={(e) => setFa({ ...fa, red: e.target.value })}>
-                    {REDES.map((r) => (
+                    {[...REDES, t.other].map((r) => (
                       <option key={r}>{r}</option>
                     ))}
                   </select>
                 </label>
                 <label className="dm-field">
-                  <span>Usuario</span>
-                  <input value={fa.usuario} onChange={(e) => setFa({ ...fa, usuario: e.target.value })} placeholder="@tu_usuario" maxLength={30} />
+                  <span>{t.user}</span>
+                  <input value={fa.usuario} onChange={(e) => setFa({ ...fa, usuario: e.target.value })} placeholder={t.userPh} maxLength={30} />
                 </label>
               </div>
               <label className="dm-field">
-                <span>Tu correo *</span>
-                <input value={fa.email} onChange={(e) => setFa({ ...fa, email: e.target.value })} placeholder="tu@correo.com" maxLength={60} />
+                <span>{t.yourEmail}</span>
+                <input value={fa.email} onChange={(e) => setFa({ ...fa, email: e.target.value })} placeholder={t.emailPh} maxLength={60} />
               </label>
               <label className="dm-field">
-                <span>Evento</span>
+                <span>{t.event}</span>
                 <input value={EVENTO} disabled />
               </label>
               <label className="dm-field">
-                <span>Beneficio para tus seguidores</span>
+                <span>{t.perk}</span>
                 <input value={fa.beneficio} onChange={(e) => setFa({ ...fa, beneficio: e.target.value })} maxLength={60} />
               </label>
               {errA.map((e) => (
                 <p key={e} className="ev-err">{e}</p>
               ))}
-              <button className="hk-btn hk-btn-primary" onClick={crearInvitacion}>Generar mi QR</button>
+              <button className="hk-btn hk-btn-primary" onClick={crearInvitacion}>{t.generate}</button>
             </div>
           </div>
           <div className="ev-out">
             {miInv ? (
               <div className="ev-card ev-pop">
-                <p className="ev-ok">¡Listo, {miInv.artista}! Comparte este link o este QR.</p>
-                <QrImg text={`${origin}/demos/qr-eventos?a=${miInv.id}`} size={190} />
+                <p className="ev-ok">{t.artistOk(miInv.artista)}</p>
+                <QrImg text={`${origin}${href(lang, "/demos/qr-eventos")}?a=${miInv.id}`} size={190} alt={t.qrAlt} />
                 <code className="ev-link">{origin.replace(/^https?:\/\//, "")}/?a={miInv.id}</code>
                 <div className="ev-actions">
-                  <button className="hk-btn hk-btn-sm" onClick={() => download(`${origin}/demos/qr-eventos?a=${miInv.id}`, `qr_${miInv.artista.replace(/\s+/g, "_")}.png`)}>↓ Descargar QR</button>
-                  <button className="hk-btn hk-btn-cyan hk-btn-sm" onClick={() => setTab(2)}>Abrir como seguidor →</button>
+                  <button className="hk-btn hk-btn-sm" onClick={() => download(`${origin}${href(lang, "/demos/qr-eventos")}?a=${miInv.id}`, `qr_${miInv.artista.replace(/\s+/g, "_")}.png`)}>{t.downloadQr}</button>
+                  <button className="hk-btn hk-btn-cyan hk-btn-sm" onClick={() => setTab(2)}>{t.openAsFollower}</button>
                 </div>
-                <small>Código de tu invitación: <b>{miInv.id}</b>. Con él sabremos cuántas personas llegaron por ti.</small>
+                <small>{t.inviteCode} <b>{miInv.id}</b>{t.inviteCodeAfter}</small>
               </div>
             ) : (
               <div className="ev-card ev-empty">
                 <div className="ev-ghost-qr" aria-hidden="true" />
-                <p>Aquí aparecerá tu link y tu QR para compartir.</p>
+                <p>{t.emptyArtist}</p>
               </div>
             )}
           </div>
@@ -258,72 +333,72 @@ export default function EventosDemo() {
         <div className="dm-panel ev-split">
           <div>
             <div className="ev-invite">
-              <span className="ev-tagline">Invitación de {inv.artista}{inv.usuario ? ` (${inv.usuario})` : ""}</span>
+              <span className="ev-tagline">{t.inviteOf} {inv.artista}{inv.usuario ? ` (${inv.usuario})` : ""}</span>
               <h3>{inv.evento}</h3>
               <span>📅 {inv.fecha}</span>
-              {inv.beneficio && <div className="ev-benefit">🎁 Tu beneficio: <b>{inv.beneficio}</b></div>}
+              {inv.beneficio && <div className="ev-benefit">🎁 {t.yourPerk} <b>{inv.beneficio}</b></div>}
             </div>
-            {!miInv && <p className="ev-note">Estás viendo la invitación de ejemplo de MC Tano. Crea la tuya en la pestaña “Artista” para verla aquí.</p>}
+            {!miInv && <p className="ev-note">{t.exampleNote}</p>}
             {!miReg ? (
               <div className="ev-form">
-                <p className="dm-muted">Regístrate para recibir tu QR personal. Lo mostrarás en la entrada del evento.</p>
+                <p className="dm-muted">{t.signupLead}</p>
                 <label className="dm-field">
-                  <span>Nombre completo *</span>
+                  <span>{t.fullName}</span>
                   <input value={fs.nombre} onChange={(e) => setFs({ ...fs, nombre: e.target.value })} maxLength={50} />
                 </label>
                 <div className="ev-row">
                   <label className="dm-field">
-                    <span>Correo electrónico *</span>
+                    <span>{t.email}</span>
                     <input value={fs.email} onChange={(e) => setFs({ ...fs, email: e.target.value })} maxLength={60} />
                   </label>
                   <label className="dm-field">
-                    <span>Celular *</span>
-                    <input value={fs.celular} onChange={(e) => setFs({ ...fs, celular: e.target.value })} placeholder="300 123 4567" maxLength={20} inputMode="tel" />
+                    <span>{t.phone}</span>
+                    <input value={fs.celular} onChange={(e) => setFs({ ...fs, celular: e.target.value })} placeholder={t.phonePh} maxLength={20} inputMode="tel" />
                   </label>
                 </div>
                 <button type="button" className="ev-linkbtn" onClick={() => setVerPolitica((v) => !v)}>
-                  {verPolitica ? "▾" : "▸"} Leer la política de tratamiento de datos
+                  {verPolitica ? "▾" : "▸"} {t.readPolicy}
                 </button>
                 {verPolitica && (
                   <div className="ev-politica">
-                    Tus datos (nombre, correo y celular) se usan solo para enviarte tu QR, validar tu ingreso al evento, aplicar tu beneficio y contar la asistencia por artista, conforme a la Ley 1581 de 2012. Puedes consultar, actualizar o pedir que se eliminen tus datos en cualquier momento. <i>(Texto de ejemplo para la demo.)</i>
+                    {t.policy} <i>{t.policyNote}</i>
                   </div>
                 )}
                 <label className="ev-check">
                   <input type="checkbox" checked={fs.acepta} onChange={(e) => setFs({ ...fs, acepta: e.target.checked })} />
-                  <span>Autorizo el tratamiento de mis datos personales según la política de tratamiento de datos. *</span>
+                  <span>{t.consent}</span>
                 </label>
                 {errS.map((e) => (
                   <p key={e} className="ev-err">{e}</p>
                 ))}
-                <button className="hk-btn hk-btn-primary" onClick={registrar}>Obtener mi QR</button>
+                <button className="hk-btn hk-btn-primary" onClick={registrar}>{t.getQr}</button>
               </div>
             ) : (
               <div className="ev-again">
                 <button className="hk-btn hk-btn-sm" onClick={() => { setMiReg(null); setFs({ nombre: "", email: "", celular: "", acepta: false }); }}>
-                  + Registrar otro seguidor
+                  {t.another}
                 </button>
-                <button className="hk-btn hk-btn-sm hk-btn-ghost" onClick={() => simularSeguidores(5)}>Simular 5 seguidores más</button>
+                <button className="hk-btn hk-btn-sm hk-btn-ghost" onClick={() => simularSeguidores(5)}>{t.simulate}</button>
               </div>
             )}
           </div>
           <div className="ev-out">
             {miReg ? (
               <div className="ev-card ev-ticket ev-pop">
-                {miReg.repetido ? <p className="ev-info">Ya estabas registrado con este correo. Este es tu QR.</p> : <p className="ev-ok">¡Listo, {miReg.reg.nombre.split(" ")[0]}! Este es tu QR personal.</p>}
-                {!miReg.repetido && <p className="ev-mail">📧 También te lo enviamos a <b>{miReg.reg.email}</b>.</p>}
-                <QrImg text={`QREV:${miReg.reg.id}`} size={190} />
-                <span className="ev-code">Código: <b>{miReg.reg.id}</b></span>
+                {miReg.repetido ? <p className="ev-info">{t.already}</p> : <p className="ev-ok">{t.followerOk(miReg.reg.nombre.split(" ")[0])}</p>}
+                {!miReg.repetido && <p className="ev-mail">{t.sentTo} <b>{miReg.reg.email}</b>.</p>}
+                <QrImg text={`QREV:${miReg.reg.id}`} size={190} alt={t.qrAlt} />
+                <span className="ev-code">{t.code} <b>{miReg.reg.id}</b></span>
                 <div className="ev-actions">
-                  <button className="hk-btn hk-btn-sm" onClick={() => download(`QREV:${miReg.reg.id}`, `mi_qr_${miReg.reg.id}.png`)}>↓ Descargar mi QR</button>
-                  <button className="hk-btn hk-btn-cyan hk-btn-sm" onClick={() => setTab(3)}>Ir a la puerta →</button>
+                  <button className="hk-btn hk-btn-sm" onClick={() => download(`QREV:${miReg.reg.id}`, `${t.dl}_${miReg.reg.id}.png`)}>{t.downloadMine}</button>
+                  <button className="hk-btn hk-btn-cyan hk-btn-sm" onClick={() => setTab(3)}>{t.toDoor}</button>
                 </div>
-                <small>Es personal: solo sirve para un ingreso.</small>
+                <small>{t.personalNote}</small>
               </div>
             ) : (
               <div className="ev-card ev-empty">
                 <div className="ev-ghost-qr" aria-hidden="true" />
-                <p>Aquí aparecerá el QR personal del seguidor.</p>
+                <p>{t.emptyFollower}</p>
               </div>
             )}
           </div>
@@ -335,23 +410,23 @@ export default function EventosDemo() {
         <div className="dm-panel">
           <div className="ev-door">
             <div>
-              <h3 className="ev-h">🚪 Puerta · {EVENTO}</h3>
-              <p className="dm-muted">En el evento, el portero escanea con la cámara del celular. Aquí toca un pase para “escanearlo”, o escribe un código.</p>
+              <h3 className="ev-h">{t.door} {EVENTO}</h3>
+              <p className="dm-muted">{t.doorLead}</p>
               <div className="ev-passes">
                 {pases.map((r) => (
                   <button key={r.id} className={`ev-pass ${r.mine ? "mine" : ""} ${r.checkin ? "used" : ""}`} onClick={() => validar(`QREV:${r.id}`)}>
-                    <QrImg text={`QREV:${r.id}`} size={54} />
+                    <QrImg text={`QREV:${r.id}`} size={54} alt={t.qrAlt} />
                     <span>
                       <b>{r.nombre}</b>
-                      <small>{r.artista}{r.evento !== EVENTO ? " · otro evento" : ""}</small>
-                      {r.mine && <i>Tuyo</i>}
+                      <small>{r.artista}{r.evento !== EVENTO ? t.otherEvent : ""}</small>
+                      {r.mine && <i>{t.yours}</i>}
                     </span>
                   </button>
                 ))}
               </div>
               <form className="ev-manual" onSubmit={(e) => { e.preventDefault(); if (codigo.trim()) { validar(codigo); setCodigo(""); } }}>
-                <input value={codigo} onChange={(e) => setCodigo(e.target.value)} placeholder="Código del QR, ej. F5MZJ7PVHP" maxLength={20} aria-label="Código del QR" />
-                <button className="hk-btn hk-btn-primary hk-btn-sm" type="submit">Validar</button>
+                <input value={codigo} onChange={(e) => setCodigo(e.target.value)} placeholder={t.codePh} maxLength={20} aria-label={t.codeAria} />
+                <button className="hk-btn hk-btn-primary hk-btn-sm" type="submit">{t.validate}</button>
               </form>
             </div>
 
@@ -359,49 +434,49 @@ export default function EventosDemo() {
               {!res && (
                 <>
                   <div className="ev-scan" aria-hidden="true"><i /></div>
-                  <p>Esperando un QR…</p>
+                  <p>{t.waiting}</p>
                 </>
               )}
               {res?.estado === "OK" && (
                 <>
-                  <b>✅ Bienvenido/a, {res.reg.nombre}</b>
-                  <span>Viene por <strong>{res.reg.artista}</strong> · código {res.codigo}</span>
+                  <b>{t.okTitle(res.reg.nombre)}</b>
+                  <span>{t.okBy} <strong>{res.reg.artista}</strong> · {t.codeWord} {res.codigo}</span>
                 </>
               )}
               {res?.estado === "YA_INGRESO" && (
                 <>
-                  <b>⛔ Este QR ya ingresó</b>
-                  <span>{res.reg.nombre} ({res.reg.artista}) entró a las <strong>{res.reg.checkin}</strong>.</span>
+                  <b>{t.usedTitle}</b>
+                  <span>{t.usedText(res.reg.nombre, res.reg.artista)}<strong>{res.reg.checkin}</strong>.</span>
                 </>
               )}
               {res?.estado === "OTRO_EVENTO" && (
                 <>
-                  <b>⚠️ QR de otro evento</b>
-                  <span>{res.reg.nombre} está registrado para <strong>{res.reg.evento}</strong>.</span>
+                  <b>{t.otherTitle}</b>
+                  <span>{t.otherText(res.reg.nombre)}<strong>{res.reg.evento}</strong>.</span>
                 </>
               )}
               {res?.estado === "NO_EXISTE" && (
                 <>
-                  <b>❌ Código no encontrado</b>
-                  <span><code>{res.codigo}</code> no está registrado.</span>
+                  <b>{t.nfTitle}</b>
+                  <span><code>{res.codigo}</code>{t.nfText}</span>
                 </>
               )}
-              {res?.estado === "INVALIDO" && <b>❌ Este QR no es de QR Eventos</b>}
+              {res?.estado === "INVALIDO" && <b>{t.invalid}</b>}
             </div>
           </div>
 
           <div className="ev-summary">
             <div className="ev-sum-head">
-              <h4>Asistencia por artista</h4>
+              <h4>{t.attendance}</h4>
               <div className="ev-metrics">
-                <div><b>{totIn}</b><span>Ingresaron</span></div>
-                <div><b>{totReg}</b><span>Registrados</span></div>
+                <div><b>{totIn}</b><span>{t.checkedIn}</span></div>
+                <div><b>{totReg}</b><span>{t.registered}</span></div>
               </div>
             </div>
             <div className="ev-bars">
               {resumen.map((r) => (
                 <div key={r.id} className={`ev-bar ${r.mine ? "mine" : ""}`}>
-                  <span className="ev-bar-name">{r.artista} {r.mine && <i>Tú</i>}<small>{r.red}</small></span>
+                  <span className="ev-bar-name">{r.artista} {r.mine && <i>{t.you}</i>}<small>{r.red}</small></span>
                   <div className="ev-bar-track">
                     <div className="reg" style={{ width: `${(r.registrados / maxReg) * 100}%` }} />
                     <div className="in" style={{ width: `${(r.ingresaron / maxReg) * 100}%` }} />
@@ -410,10 +485,10 @@ export default function EventosDemo() {
                 </div>
               ))}
             </div>
-            <div className="ev-legend"><span className="in" /> Ingresaron <span className="reg" /> Registrados</div>
+            <div className="ev-legend"><span className="in" /> {t.checkedIn} <span className="reg" /> {t.registered}</div>
           </div>
           <div className="dm-bottom">
-            <button className="hk-btn hk-btn-ghost" onClick={() => { setData(seed()); setMiInv(null); setMiReg(null); setRes(null); setTab(1); }}>↺ Reiniciar demo</button>
+            <button className="hk-btn hk-btn-ghost" onClick={() => { setData(seed(lang)); setMiInv(null); setMiReg(null); setRes(null); setTab(1); }}>{t.reset}</button>
           </div>
         </div>
       )}
