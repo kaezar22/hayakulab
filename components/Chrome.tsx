@@ -28,6 +28,18 @@ const T = {
     city: "Bogotá, Colombia",
     fast: "“fast”",
   },
+  zh: {
+    home: "首页",
+    nav: [["servicios", "服务"], ["demos", "演示"], ["clientes", "客户"], ["proceso", "合作流程"]],
+    navLabel: "主导航",
+    cta: "免费评估",
+    tagline: "面向中小企业的 AI 自动化。让流程自己运转，更快。",
+    demos: "演示",
+    contact: "联系方式",
+    demoLinks: [["/demos/pedidos-qr", "扫码点单"], ["/demos/pedidos", "B2B 订货"], ["/demos/qr-eventos", "活动二维码"], ["/demos/enriquecimiento", "数据增强"]],
+    city: "哥伦比亚 · 波哥大",
+    fast: "“快”",
+  },
 } as const;
 
 export function Logo({ lang = "es" }: { lang?: Lang }) {

@@ -44,7 +44,9 @@ export async function downloadInvoicePdf(opts: {
   invoiceNo: string;
   lang: Lang;
 }) {
-  const { order, client, point, lines, invoiceNo, lang } = opts;
+  const { order, client, point, lines, invoiceNo } = opts;
+  // Las fuentes estándar de jsPDF no tienen caracteres chinos: en chino la factura sale en inglés.
+  const lang: Exclude<Lang, "zh"> = opts.lang === "zh" ? "en" : opts.lang;
   const t = TXT[lang];
   const { jsPDF } = await import("jspdf");
   const { default: autoTable } = await import("jspdf-autotable");

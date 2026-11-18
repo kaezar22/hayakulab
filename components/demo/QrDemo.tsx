@@ -8,7 +8,7 @@ import { href, type Lang } from "@/lib/i18n";
 // comparten el mismo estado. En el sistema real esto viaja por Supabase Realtime.
 
 type Cat = "beer" | "cocktails" | "snacks" | "soft";
-type Item = { id: string; name: string; desc: string; price: number; cat: Cat; en: [string, string] };
+type Item = { id: string; name: string; desc: string; price: number; cat: Cat; en: [string, string]; zh: [string, string] };
 type Status = "nuevo" | "preparando" | "listo" | "entregado";
 type Order = {
   id: string;
@@ -22,17 +22,17 @@ type Order = {
 };
 
 const MENU: Item[] = [
-  { id: "c1", cat: "beer", name: "Cerveza artesanal rubia", desc: "Pinta 473 ml", price: 16000, en: ["Craft blonde ale", "Pint, 16 oz"] },
-  { id: "c2", cat: "beer", name: "Cerveza roja", desc: "Pinta 473 ml", price: 17000, en: ["Red ale", "Pint, 16 oz"] },
-  { id: "c3", cat: "beer", name: "Michelada", desc: "Limón, sal y la cerveza que elijas", price: 19000, en: ["Michelada", "Lime, salt and your choice of beer"] },
-  { id: "k1", cat: "cocktails", name: "Mojito", desc: "Ron blanco, hierbabuena, limón", price: 28000, en: ["Mojito", "White rum, mint, lime"] },
-  { id: "k2", cat: "cocktails", name: "Gin tonic de maracuyá", desc: "Ginebra, tónica, maracuyá", price: 32000, en: ["Passion fruit gin & tonic", "Gin, tonic, passion fruit"] },
-  { id: "k3", cat: "cocktails", name: "Margarita", desc: "Tequila, triple sec, limón", price: 30000, en: ["Margarita", "Tequila, triple sec, lime"] },
-  { id: "p1", cat: "snacks", name: "Nachos de la casa", desc: "Guacamole, pico de gallo, queso", price: 26000, en: ["House nachos", "Guacamole, pico de gallo, cheese"] },
-  { id: "p2", cat: "snacks", name: "Alitas BBQ", desc: "10 unidades con papas", price: 34000, en: ["BBQ wings", "10 pieces with fries"] },
-  { id: "p3", cat: "snacks", name: "Empanadas", desc: "5 unidades con ají", price: 18000, en: ["Empanadas", "5 pieces with hot sauce"] },
-  { id: "s1", cat: "soft", name: "Limonada de coco", desc: "Vaso 400 ml", price: 12000, en: ["Coconut lemonade", "13 oz glass"] },
-  { id: "s2", cat: "soft", name: "Soda de frutos rojos", desc: "Vaso 400 ml", price: 11000, en: ["Berry soda", "13 oz glass"] },
+  { id: "c1", cat: "beer", name: "Cerveza artesanal rubia", desc: "Pinta 473 ml", price: 16000, en: ["Craft blonde ale", "Pint, 16 oz"], zh: ["精酿金色艾尔", "一品脱 473 毫升"] },
+  { id: "c2", cat: "beer", name: "Cerveza roja", desc: "Pinta 473 ml", price: 17000, en: ["Red ale", "Pint, 16 oz"], zh: ["红色艾尔", "一品脱 473 毫升"] },
+  { id: "c3", cat: "beer", name: "Michelada", desc: "Limón, sal y la cerveza que elijas", price: 19000, en: ["Michelada", "Lime, salt and your choice of beer"], zh: ["米切拉达", "青柠、盐，啤酒任选"] },
+  { id: "k1", cat: "cocktails", name: "Mojito", desc: "Ron blanco, hierbabuena, limón", price: 28000, en: ["Mojito", "White rum, mint, lime"], zh: ["莫吉托", "白朗姆、薄荷、青柠"] },
+  { id: "k2", cat: "cocktails", name: "Gin tonic de maracuyá", desc: "Ginebra, tónica, maracuyá", price: 32000, en: ["Passion fruit gin & tonic", "Gin, tonic, passion fruit"], zh: ["百香果金汤力", "金酒、汤力水、百香果"] },
+  { id: "k3", cat: "cocktails", name: "Margarita", desc: "Tequila, triple sec, limón", price: 30000, en: ["Margarita", "Tequila, triple sec, lime"], zh: ["玛格丽特", "龙舌兰、橙味利口酒、青柠"] },
+  { id: "p1", cat: "snacks", name: "Nachos de la casa", desc: "Guacamole, pico de gallo, queso", price: 26000, en: ["House nachos", "Guacamole, pico de gallo, cheese"], zh: ["招牌玉米片", "牛油果酱、番茄莎莎、芝士"] },
+  { id: "p2", cat: "snacks", name: "Alitas BBQ", desc: "10 unidades con papas", price: 34000, en: ["BBQ wings", "10 pieces with fries"], zh: ["烧烤鸡翅", "10 只，配薯条"] },
+  { id: "p3", cat: "snacks", name: "Empanadas", desc: "5 unidades con ají", price: 18000, en: ["Empanadas", "5 pieces with hot sauce"], zh: ["哥伦比亚炸饺", "5 个，配辣酱"] },
+  { id: "s1", cat: "soft", name: "Limonada de coco", desc: "Vaso 400 ml", price: 12000, en: ["Coconut lemonade", "13 oz glass"], zh: ["椰子柠檬水", "400 毫升"] },
+  { id: "s2", cat: "soft", name: "Soda de frutos rojos", desc: "Vaso 400 ml", price: 11000, en: ["Berry soda", "13 oz glass"], zh: ["莓果苏打", "400 毫升"] },
 ];
 const byId = Object.fromEntries(MENU.map((m) => [m.id, m]));
 const CATS = Array.from(new Set(MENU.map((m) => m.cat)));
@@ -43,7 +43,7 @@ const TX = {
     cats: { beer: "Cervezas", cocktails: "Cócteles", snacks: "Para picar", soft: "Sin alcohol" } as Record<Cat, string>,
     tables: { Barra: "Barra", "Terraza 2": "Terraza 2" } as Record<string, string>,
     table: "Mesa", now: "ahora", ago: (m: number) => `hace ${m} min`,
-    tabClient: "📱 Cliente · Mesa", tabBar: "🖥️ Tablero del bar",
+    tabClient: "📱 Cliente ·", tabBar: "🖥️ Tablero del bar",
     clientLabel: "Lo que ve el cliente al escanear", barLabel: "Lo que ve el bar en su pantalla",
     waiterComing: "Mesero en camino", callWaiter: "🙋 Llamar mesero",
     add: "Agregar", remove: "Quitar",
@@ -62,13 +62,13 @@ const TX = {
     callsWaiter: "pide un mesero", attended: "Atendido",
     cols: { nuevo: "Nuevos", preparando: "Preparando", listo: "Listos" } as Record<string, string>,
     mine: "Tu pedido", paid: "Pagado", unpaid: "Por cobrar", prepare: "Preparar →", ready: "Listo ✓", delivered: "Entregado",
-    deliveredToday: "entregados hoy", reset: "↺ Reiniciar demo",
+    deliveredToday: "entregados hoy", deliveredLine: (n: number) => `${n} entregados hoy`, reset: "↺ Reiniciar demo",
   },
   en: {
     cats: { beer: "Beer", cocktails: "Cocktails", snacks: "Snacks", soft: "Non-alcoholic" } as Record<Cat, string>,
     tables: { Barra: "Bar counter", "Terraza 2": "Patio 2" } as Record<string, string>,
     table: "Table", now: "now", ago: (m: number) => `${m} min ago`,
-    tabClient: "📱 Guest · Table", tabBar: "🖥️ Bar board",
+    tabClient: "📱 Guest ·", tabBar: "🖥️ Bar board",
     clientLabel: "What the guest sees after scanning", barLabel: "What the bar sees on its screen",
     waiterComing: "Waiter on the way", callWaiter: "🙋 Call waiter",
     add: "Add", remove: "Remove",
@@ -87,7 +87,32 @@ const TX = {
     callsWaiter: "is calling a waiter", attended: "Done",
     cols: { nuevo: "New", preparando: "Preparing", listo: "Ready" } as Record<string, string>,
     mine: "Your order", paid: "Paid", unpaid: "Unpaid", prepare: "Prepare →", ready: "Ready ✓", delivered: "Delivered",
-    deliveredToday: "delivered today", reset: "↺ Reset demo",
+    deliveredToday: "delivered today", deliveredLine: (n: number) => `${n} delivered today`, reset: "↺ Reset demo",
+  },
+  zh: {
+    cats: { beer: "啤酒", cocktails: "鸡尾酒", snacks: "小吃", soft: "无酒精饮品" } as Record<Cat, string>,
+    tables: { Barra: "吧台", "Terraza 2": "露台 2" } as Record<string, string>,
+    table: "号桌", now: "刚刚", ago: (m: number) => `${m} 分钟前`,
+    tabClient: "📱 顾客 ·", tabBar: "🖥️ 吧台看板",
+    clientLabel: "顾客扫码后看到的页面", barLabel: "吧台屏幕上看到的内容",
+    waiterComing: "服务员马上到", callWaiter: "🙋 呼叫服务员",
+    add: "添加", remove: "减少",
+    viewMine: "查看我的订单", viewCart: "查看订单", pick: "请从菜单中选择",
+    keepOrdering: "← 继续点单", yourOrder: "您的订单", total: "合计",
+    whose: "下单人姓名", namePh: "您的名字",
+    errName: "请填写名字，方便我们找到您。", errEmpty: "请至少添加一件商品。",
+    payNote: "在吧台或向服务员付款。（可开通在线支付。）",
+    send: "提交订单到吧台", backMenu: "← 返回菜单",
+    st: { nuevo: "已收到订单", preparando: "正在制作", listo: "您的餐点已备好！", entregado: "已送达，干杯！" } as Record<Status, string>,
+    readyHint: "请到吧台取餐，或稍候服务员送达。", orderWord: "订单",
+    steps: ["已接单", "制作中", "已备好！"],
+    hint: ["👉 现在切换到", "吧台看板", "，把订单移到“制作中”，再移到“已完成”：这部手机就会响铃并振动。"],
+    qrAlt: "演示二维码", qrTitle: "每张桌子的二维码就是这样。", qrText: "用手机扫码，即可在手机上打开本演示。",
+    board: "订单看板", boardSub: "自动更新 · 无需刷新", orders: "笔订单", sold: "销售额",
+    callsWaiter: "在呼叫服务员", attended: "已处理",
+    cols: { nuevo: "新订单", preparando: "制作中", listo: "已完成" } as Record<string, string>,
+    mine: "您的订单", paid: "已付款", unpaid: "未付款", prepare: "开始制作 →", ready: "完成 ✓", delivered: "已送达",
+    deliveredToday: "今日已送达", deliveredLine: (n: number) => `今日已送达 ${n} 单`, reset: "↺ 重置演示",
   },
 };
 
@@ -139,9 +164,9 @@ function beep() {
 
 export default function QrDemo({ lang = "es" }: { lang?: Lang }) {
   const t = TX[lang];
-  const itemName = (id: string) => (lang === "en" ? byId[id].en[0] : byId[id].name);
-  const itemDesc = (id: string) => (lang === "en" ? byId[id].en[1] : byId[id].desc);
-  const tableName = (x: string) => t.tables[x] ?? `${t.table} ${x}`;
+  const itemName = (id: string) => (lang === "es" ? byId[id].name : byId[id][lang][0]);
+  const itemDesc = (id: string) => (lang === "es" ? byId[id].desc : byId[id][lang][1]);
+  const tableName = (x: string) => t.tables[x] ?? (lang === "zh" ? `${x} ${t.table}` : `${t.table} ${x}`);
   const ago = (at: number, nowMs: number) => {
     const m = Math.max(0, Math.round((nowMs - at) / 60_000));
     return m === 0 ? t.now : t.ago(m);
@@ -225,7 +250,7 @@ export default function QrDemo({ lang = "es" }: { lang?: Lang }) {
     <div className="qd">
       <div className="qd-switch" role="tablist">
         <button role="tab" aria-selected={view === "cliente"} className={view === "cliente" ? "on" : ""} onClick={() => setView("cliente")}>
-          {t.tabClient} {MY_TABLE}
+          {t.tabClient} {tableName(MY_TABLE)}
         </button>
         <button role="tab" aria-selected={view === "bar"} className={view === "bar" ? "on" : ""} onClick={() => setView("bar")}>
           {t.tabBar} {newCount > 0 && <i>{newCount}</i>}
@@ -448,7 +473,7 @@ export default function QrDemo({ lang = "es" }: { lang?: Lang }) {
               })}
             </div>
             <div className="qd-board-foot">
-              <span>{orders.filter((o) => o.status === "entregado").length} {t.deliveredToday}</span>
+              <span>{t.deliveredLine(orders.filter((o) => o.status === "entregado").length)}</span>
               <button onClick={reset}>{t.reset}</button>
             </div>
           </div>

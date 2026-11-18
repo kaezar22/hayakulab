@@ -28,8 +28,23 @@ export const TOPICS_EN: Record<Topic, string> = {
   derechos: "Human rights and justice",
 };
 
-export function topicLabel(t: Topic, lang: "es" | "en" = "es") {
-  return lang === "en" ? TOPICS_EN[t] : TOPICS[t];
+export const TOPICS_ZH: Record<Topic, string> = {
+  conflicto: "武装冲突",
+  comercio: "贸易与关税",
+  sanciones: "制裁",
+  energia: "能源与大宗商品",
+  diplomacia: "外交",
+  elecciones: "选举与国内政治",
+  economia: "经济与央行",
+  tecnologia: "科技与网络安全",
+  migracion: "移民与边境",
+  derechos: "人权与司法",
+};
+
+export type GeoLang = "es" | "en" | "zh";
+
+export function topicLabel(t: Topic, lang: GeoLang = "es") {
+  return lang === "en" ? TOPICS_EN[t] : lang === "zh" ? TOPICS_ZH[t] : TOPICS[t];
 }
 
 export const TONES = ["positivo", "neutral", "negativo"] as const;
@@ -45,18 +60,22 @@ export type Classification = {
   summary: string;
   /** Resumen en inglés (para la versión en inglés del sitio). */
   summaryEn: string;
+  /** Resumen en chino simplificado. */
+  summaryZh: string;
   people: string[];
   /** ISO 3166-1 alfa-2. */
   countries: string[];
   topic: Topic;
   subtopic: string;
   subtopicEn: string;
+  subtopicZh: string;
   tone: Tone;
   risk: Risk;
 };
 
 const regionNames = new Intl.DisplayNames(["es"], { type: "region" });
 const regionNamesEn = new Intl.DisplayNames(["en"], { type: "region" });
+const regionNamesZh = new Intl.DisplayNames(["zh-Hans"], { type: "region" });
 
 /** Código ISO válido (o "EU" para la Unión Europea). */
 export function isCountryCode(code: string): boolean {
@@ -68,9 +87,9 @@ export function isCountryCode(code: string): boolean {
   }
 }
 
-export function countryName(code: string, lang: "es" | "en" = "es"): string {
+export function countryName(code: string, lang: GeoLang = "es"): string {
   try {
-    return (lang === "en" ? regionNamesEn : regionNames).of(code) ?? code;
+    return (lang === "en" ? regionNamesEn : lang === "zh" ? regionNamesZh : regionNames).of(code) ?? code;
   } catch {
     return code;
   }
@@ -136,6 +155,7 @@ export function parseClassification(raw: string, count: number): Classification[
       i,
       summary: summary.slice(0, 400),
       summaryEn: typeof o.summary_en === "string" && o.summary_en.trim() ? o.summary_en.trim().slice(0, 400) : summary.slice(0, 400),
+      summaryZh: typeof o.summary_zh === "string" && o.summary_zh.trim() ? o.summary_zh.trim().slice(0, 300) : "",
       people: strings(o.people, 5),
       countries: strings(o.countries, 8)
         .map((c) => c.toUpperCase())
@@ -143,6 +163,7 @@ export function parseClassification(raw: string, count: number): Classification[
       topic,
       subtopic: typeof o.subtopic === "string" ? o.subtopic.trim().slice(0, 60) : "",
       subtopicEn: typeof o.subtopic_en === "string" ? o.subtopic_en.trim().slice(0, 60) : "",
+      subtopicZh: typeof o.subtopic_zh === "string" ? o.subtopic_zh.trim().slice(0, 40) : "",
       tone: TONES.includes(tone) ? tone : "neutral",
       risk: RISKS.includes(risk) ? risk : "neutral",
     });

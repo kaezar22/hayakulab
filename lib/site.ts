@@ -25,20 +25,26 @@ export const BOOKING_URL = "";
 
 export const LINKEDIN = "https://www.linkedin.com/in/cesar-salgado-274a2329/";
 
+const BOOKING_TEXT: Record<Lang, { subject: string; body: string }> = {
+  es: { subject: "Diagnóstico gratuito de automatización", body: "Hola, quiero agendar el diagnóstico gratuito.\n\nEmpresa:\nProceso que queremos automatizar:\n" },
+  en: { subject: "Free automation assessment", body: "Hi, I'd like to book the free assessment.\n\nCompany:\nProcess we want to automate:\n" },
+  zh: { subject: "免费自动化评估", body: "您好，我想预约免费评估。\n\n公司：\n希望自动化的流程：\n" },
+};
+
 export function bookingHref(lang: Lang = "es") {
   if (BOOKING_URL) return BOOKING_URL;
-  const subject = encodeURIComponent(lang === "en" ? "Free automation assessment" : "Diagnóstico gratuito de automatización");
-  const body = encodeURIComponent(
-    lang === "en"
-      ? "Hi, I'd like to book the free assessment.\n\nCompany:\nProcess we want to automate:\n"
-      : "Hola, quiero agendar el diagnóstico gratuito.\n\nEmpresa:\nProceso que queremos automatizar:\n",
-  );
-  return `mailto:${EMAIL}?subject=${subject}&body=${body}`;
+  const t = BOOKING_TEXT[lang];
+  return `mailto:${EMAIL}?subject=${encodeURIComponent(t.subject)}&body=${encodeURIComponent(t.body)}`;
 }
 
+const WA_TEXT: Record<Lang, string> = {
+  es: "Hola Hayaku Lab, quiero automatizar un proceso de mi empresa.",
+  en: "Hi Hayaku Lab, I'd like to automate a process in my company.",
+  zh: "您好 Hayaku Lab，我想自动化公司的一个流程。",
+};
+
 export function whatsappHref(lang: Lang = "es") {
-  const text = lang === "en" ? "Hi Hayaku Lab, I'd like to automate a process in my company." : "Hola Hayaku Lab, quiero automatizar un proceso de mi empresa.";
-  return WHATSAPP ? `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}` : "";
+  return WHATSAPP ? `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(WA_TEXT[lang])}` : "";
 }
 
 export const TESTIMONIALS = [
@@ -59,6 +65,15 @@ export const TESTIMONIALS = [
       statLabel: "on tasks now handled by a custom tool",
       note: "Translated from Spanish",
     },
+    // Versión en chino (traducción del testimonio original en español).
+    zh: {
+      quote:
+        "Hayaku Lab 帮助我们把已有的 AI 工具用得更充分。他们还把过去需要数小时才能完成和交付的工作实现了自动化：借助他们为我们定制的工具，现在只需几秒钟。",
+      role: "客户 · AI 配置与自动化",
+      stat: "数小时 → 数秒",
+      statLabel: "由定制工具完成的工作",
+      note: "译自西班牙语",
+    },
   },
-  // Para agregar otro testimonio, copia el bloque de arriba (con su versión `en`) y pon el logo en /public.
+  // Para agregar otro testimonio, copia el bloque de arriba (con sus versiones `en` y `zh`) y pon el logo en /public.
 ];

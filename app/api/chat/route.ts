@@ -28,6 +28,11 @@ const EN_NOTE = `
 
 The visitor is browsing the English version of the site. Answer in the language of their question (usually English). When you mention a demo, use the English links: /en/demos/pedidos-qr, /en/demos/pedidos, /en/demos/qr-eventos and /en/demos/enriquecimiento. We work remotely with companies in any country.`;
 
+// El visitante está en la versión en chino del sitio.
+const ZH_NOTE = `
+
+The visitor is browsing the Chinese (Simplified) version of the site. Answer in the language of their question (usually Simplified Chinese, 简体中文). When you mention a demo, use the Chinese links: /zh/demos/pedidos-qr, /zh/demos/pedidos, /zh/demos/qr-eventos and /zh/demos/enriquecimiento. We work remotely with companies in any country, and César speaks Mandarin Chinese.`;
+
 const MAX_QUESTION_CHARS = 600;
 const MAX_HISTORY = 8;
 
@@ -61,10 +66,10 @@ export async function POST(req: Request) {
   }
 
   let messages: Msg[];
-  let lang: "es" | "en" = "es";
+  let lang: "es" | "en" | "zh" = "es";
   try {
     const body = await req.json();
-    if (body.lang === "en") lang = "en";
+    if (body.lang === "en" || body.lang === "zh") lang = body.lang;
     messages = (Array.isArray(body.messages) ? body.messages : [])
       .filter((m: Msg) => (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
       .slice(-MAX_HISTORY)
@@ -82,7 +87,7 @@ export async function POST(req: Request) {
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
     body: JSON.stringify({
       model: "deepseek-chat",
-      messages: [{ role: "system", content: lang === "en" ? SYSTEM_PROMPT + EN_NOTE : SYSTEM_PROMPT }, ...messages],
+      messages: [{ role: "system", content: SYSTEM_PROMPT + (lang === "en" ? EN_NOTE : lang === "zh" ? ZH_NOTE : "") }, ...messages],
       temperature: 0.4,
       max_tokens: 500,
       stream: true,

@@ -6,12 +6,12 @@ import "@fontsource/ibm-plex-sans/500.css";
 import "@fontsource/ibm-plex-sans/600.css";
 import "@/app/globals.css";
 import ChatWidget from "@/components/ChatWidget";
-import type { Lang } from "@/lib/i18n";
+import { LANG_TAG, type Lang } from "@/lib/i18n";
 
 /** <html> y <body> comunes a los dos idiomas (cada idioma tiene su layout raíz). */
 export default function RootHtml({ lang, children }: { lang: Lang; children: React.ReactNode }) {
   return (
-    <html lang={lang}>
+    <html lang={LANG_TAG[lang]}>
       <body>
         {children}
         <ChatWidget lang={lang} />

@@ -769,3 +769,16 @@ button { font: inherit; }
 }
 @media (max-width: 380px) { .hk-logo span { display: none; } }
 .hk-translated { font-size: 0.8rem; color: #8b8aa3; }
+
+/* ---------- Chino: tipografía con caracteres CJK ----------
+   Sora e IBM Plex no traen caracteres chinos: se usan las fuentes del sistema
+   (PingFang en Apple, Microsoft YaHei en Windows, Noto Sans SC en Android/Linux). */
+:root:lang(zh-Hans) {
+  --display: "Sora", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Source Han Sans SC", sans-serif;
+  --sans: "IBM Plex Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Source Han Sans SC", sans-serif;
+}
+:lang(zh-Hans) h1, :lang(zh-Hans) h2, :lang(zh-Hans) h3 { letter-spacing: 0; }
+:lang(zh-Hans) .hk-hero h1 { line-height: 1.18; letter-spacing: 0; }
+:lang(zh-Hans) .hk-hero h1 em { font-style: normal; }
+:lang(zh-Hans) .hk-eyebrow, :lang(zh-Hans) .hk-kicker, :lang(zh-Hans) .qd-label, :lang(zh-Hans) .geo-table th { letter-spacing: 0.06em; }
+:lang(zh-Hans) body { line-height: 1.75; }

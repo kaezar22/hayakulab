@@ -53,8 +53,33 @@ const TX = {
     csvName: "enriched-news", own: { estatal: "state", publico: "public", privado: "private" } as Record<string, string>,
     locale: "en-US",
   },
+  zh: {
+    tone: { positivo: "正面", neutral: "中性", negativo: "负面" } as Record<Tone, string>,
+    risk: { aumenta: "↑ 上升", neutral: "→ 中性", disminuye: "↓ 下降" } as Record<Risk, string>,
+    loading: (n: number, c: number) => [`正在读取 ${c} 个国家的 ${n} 家媒体`, "剔除与地缘政治无关的内容", "AI 摘要与分类中"],
+    loadingNote: "每小时首次加载可能需要一分钟左右。之后会缓存，打开即显示。",
+    errTitle: "新闻加载失败", errGeneric: "新闻加载失败，请几分钟后再试。", errNet: "新闻加载失败，请检查网络连接。", retry: "重试",
+    headCount: (n: number, c: number) => `已审阅 ${c} 条，增强 ${n} 条新闻`,
+    headSub: (o: number, time: string) => `${o} 家媒体 · 最近 48 小时 · 更新于 ${time}（哥伦比亚时间，UTC−5）· 每小时更新`,
+    sample: "示例数据（离线模式）",
+    toneAria: "筛选后新闻的情感倾向", neg: "负面", neu: "中性", pos: "正面",
+    topicsAria: "主题", search: "搜索", searchPh: "关键词、媒体…", person: "相关人物", country: "涉及国家", outletCountry: "媒体所属国家", sentiment: "情感倾向", riskLabel: "市场风险", all: "全部",
+    count: (r: number, n: number) => `共 ${n} 条，显示 ${r} 条`, clear: "清除筛选", csv: "↓ 下载 CSV",
+    cols: ["媒体", "新闻与摘要", "相关人物", "国家", "主题", "情感倾向", "风险"], newsCol: "新闻",
+    state: "官方", pub: "公共", stateTitle: "由政府控制或资助的媒体", pubTitle: "具有编辑独立性的公共媒体",
+    none: "没有符合筛选条件的新闻。",
+    help1: ["情感倾向", "指新闻本身的基调（达成协议为正面，发生袭击为负面）。", "风险", "指该新闻可能增加还是降低市场感知到的不确定性。分类由 AI 自动完成，可能出错：下结论前请先阅读原文。每家媒体的所属国家由人工设定。"],
+    outletsUsed: "查询的媒体：", noResponse: "本次无响应：",
+    csvHeader: ["日期", "媒体", "媒体所属国家", "媒体类型", "标题", "摘要", "人物", "国家", "主题", "子主题", "情感倾向", "风险", "链接"],
+    csvName: "enriched-news-zh", own: { estatal: "官方", publico: "公共", privado: "私营" } as Record<string, string>,
+    locale: "zh-CN",
+  },
 };
 type T = (typeof TX)["es"];
+
+/** Resumen y subtema en el idioma de la página (con respaldo si la IA no lo devolvió). */
+const summaryOf = (it: GeoItem, lang: Lang) => (lang === "en" ? it.summaryEn : lang === "zh" ? it.summaryZh || it.summaryEn : it.summary) || it.summary;
+const subtopicOf = (it: GeoItem, lang: Lang) => (lang === "en" ? it.subtopicEn : lang === "zh" ? it.subtopicZh || it.subtopicEn : it.subtopic) || it.subtopic;
 
 const fmt = (lang: Lang) =>
   new Intl.DateTimeFormat(TX[lang].locale, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone: "America/Bogota" });
@@ -73,11 +98,11 @@ function downloadCsv(rows: GeoItem[], lang: Lang) {
       countryName(it.outlet.country, lang),
       t.own[it.outlet.ownership ?? "privado"],
       it.title,
-      lang === "en" ? it.summaryEn : it.summary,
+      summaryOf(it, lang),
       it.people.join(" | "),
       it.countries.map((c) => countryName(c, lang)).join(" | "),
       topicLabel(it.topic, lang),
-      lang === "en" ? it.subtopicEn || it.subtopic : it.subtopic,
+      subtopicOf(it, lang),
       t.tone[it.tone].toLowerCase(),
       t.risk[it.risk].replace(/^[^ ]+ /, "").toLowerCase(),
       it.url,
@@ -112,7 +137,7 @@ function matches(it: GeoItem, f: Filters) {
   if (f.risk && it.risk !== f.risk) return false;
   if (f.text) {
     const q = f.text.toLowerCase();
-    const hay = `${it.title} ${it.summary} ${it.summaryEn} ${it.subtopic} ${it.subtopicEn} ${it.outlet.name}`.toLowerCase();
+    const hay = `${it.title} ${it.summary} ${it.summaryEn} ${it.summaryZh ?? ""} ${it.subtopic} ${it.subtopicEn} ${it.subtopicZh ?? ""} ${it.outlet.name}`.toLowerCase();
     if (!hay.includes(q)) return false;
   }
   return true;
@@ -129,7 +154,7 @@ export default function GeoDemo({ lang = "es" }: { lang?: Lang }) {
         const j = await r.json().catch(() => null);
         if (!alive) return;
         if (r.ok && j?.ok) setState({ status: "ok", data: j });
-        else setState({ status: "error", message: lang === "en" ? t.errGeneric : (j?.error ?? t.errGeneric) });
+        else setState({ status: "error", message: lang === "es" ? (j?.error ?? t.errGeneric) : t.errGeneric });
       })
       .catch(() => alive && setState({ status: "error", message: t.errNet }));
     return () => {
@@ -275,7 +300,7 @@ function GeoTable({ data, lang, t }: { data: Data; lang: Lang; t: T }) {
                 </td>
                 <td className="c-news" data-label={t.newsCol}>
                   <a href={it.url} target="_blank" rel="noopener noreferrer">{it.title}</a>
-                  <p>{lang === "en" ? it.summaryEn : it.summary}</p>
+                  <p>{summaryOf(it, lang)}</p>
                 </td>
                 <td data-label={t.cols[2]}>
                   {it.people.length ? <ul>{it.people.map((p) => <li key={p}>{p}</li>)}</ul> : <span className="muted">—</span>}
@@ -285,7 +310,7 @@ function GeoTable({ data, lang, t }: { data: Data; lang: Lang; t: T }) {
                 </td>
                 <td data-label={t.cols[4]}>
                   <div>{topicLabel(it.topic, lang)}</div>
-                  {(lang === "en" ? it.subtopicEn || it.subtopic : it.subtopic) && <small className="muted">{lang === "en" ? it.subtopicEn || it.subtopic : it.subtopic}</small>}
+                  {subtopicOf(it, lang) && <small className="muted">{subtopicOf(it, lang)}</small>}
                 </td>
                 <td data-label={t.cols[5]}><span className={`geo-pill tone-${it.tone}`}>{t.tone[it.tone]}</span></td>
                 <td data-label={t.cols[6]}><span className={`geo-risk risk-${it.risk}`}>{t.risk[it.risk]}</span></td>

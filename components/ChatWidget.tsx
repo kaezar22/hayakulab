@@ -31,6 +31,18 @@ const TX = {
     hello: "Hi! 👋 I'm the Hayaku Lab assistant. Tell me which process takes up most of your team's time, or ask me about our services and demos.",
     typing: "Typing", placeholder: "Type your question…", send: "Send", nudge: "What would you like to automate? 💬",
   },
+  zh: {
+    suggestions: [
+      "你们能自动化哪些流程？",
+      "免费评估是怎么进行的？",
+      "我开酒吧，扫码点单怎么用？",
+      "我们把 WhatsApp 上的订单手工抄到 Excel",
+    ],
+    error: `暂时无法回答。请发邮件至 ${EMAIL}。`,
+    dialog: "Hayaku Lab 智能助手", title: "Hayaku 助手", status: "在线 · AI 驱动", close: "关闭对话", open: "打开对话",
+    hello: "您好！👋 我是 Hayaku Lab 的智能助手。告诉我贵公司哪个流程最耗时间，或者问问我们的服务和演示。",
+    typing: "正在输入", placeholder: "输入您的问题…", send: "发送", nudge: "想自动化哪个流程？💬",
+  },
 };
 
 export default function ChatWidget({ lang = "es" }: { lang?: Lang }) {

@@ -55,6 +55,23 @@ const QR: Record<Lang, PageText> = {
     ],
     note: "Bar La Esquina is a fictional business. This demo runs entirely in your browser; in the real system the phone and the bar are separate devices connected in real time. Prices are in Colombian pesos (COP).",
   },
+  zh: {
+    metaTitle: "演示 · 扫码点单",
+    metaDescription: "看看酒吧如何通过每张桌子上的二维码接收订单，并在餐点备好时通知顾客。",
+    tag: "酒吧与餐厅",
+    title: "扫码点单",
+    lead: "左边是 7 号桌顾客的手机，右边是吧台的屏幕。点一样东西并提交，然后在看板上把它移到“已完成”：手机就会响铃并振动。",
+    howTitle: "真实系统如何运作",
+    how: [
+      "每张桌子都有专属的二维码。扫码即可打开该桌的菜单，无需下载任何应用。",
+      "顾客选好餐点、填写名字后提交。订单即时出现在吧台看板上，无需刷新页面。",
+      "吧台把每个订单从“新订单”移到“制作中”，再移到“已完成”。标记完成后，顾客手机会响铃、振动并弹出提示。",
+      "吧台可以标记售罄商品，查看谁在呼叫服务员，并跟踪已付款 / 未付款订单。",
+      "价格和总额在服务器端计算，绝不在浏览器中计算。可接入当地的在线支付网关。",
+      "技术：Vercel 上的 Next.js 加 Supabase（Postgres + 实时同步）。任何手机都能使用。",
+    ],
+    note: "Bar La Esquina 是虚构的商家。本演示完全在您的浏览器中运行；在真实系统中，顾客手机和吧台是实时连接的不同设备。价格单位为哥伦比亚比索（COP）。",
+  },
 };
 
 const B2B: Record<Lang, PageText> = {
@@ -91,6 +108,23 @@ const B2B: Record<Lang, PageText> = {
       "Based on the system Nutrienti uses every day, connected to Google Sheets and its customer master file.",
     ],
     note: "Lácteos Agua Clara S.A.S. is a fictional company; all customers, prices and tax IDs on this page are made up. Prices are in Colombian pesos (COP). Your test orders are stored only in your browser.",
+  },
+  zh: {
+    metaTitle: "演示 · B2B 订货与开票",
+    metaDescription: "看看经销商如何接收在线订单：即使客户写错名称也能识别，自动套用价目表并生成发票。",
+    tag: "经销商",
+    title: "B2B 订货与开票",
+    lead: "Lácteos Agua Clara 是一家虚构的乳制品经销商，接收各家餐厅的订单。以餐厅身份下一个单（名称随便写），看看后台如何把它匹配到正确的客户、定价并生成发票。",
+    howTitle: "真实系统如何运作",
+    how: [
+      "各门店通过一个链接下单，看不到价格。每一行订单都会即时记录到经销商的表格或数据库中。",
+      "餐厅填写的名称会自动与法人名称、税号和价目表匹配。如果相似度不高，系统会标记为待核对，而不是随意猜测。",
+      "只能选择与实际配送日相符的送货日期。",
+      "后台可以查看所有订单及其状态，下载 PDF 发票，以及包含全部明细、可导入 ERP 的 Excel 文件。",
+      "餐厅确认收货后，即可统计实际配送时长。",
+      "基于 Nutrienti 每天都在使用的系统，连接 Google Sheets 和其客户主数据。",
+    ],
+    note: "Lácteos Agua Clara S.A.S. 是虚构公司，本页所有客户、价格和税号均为虚构。价格单位为哥伦比亚比索（COP）。PDF 发票以英文生成。您的测试订单只保存在浏览器中。",
   },
 };
 
@@ -129,6 +163,23 @@ const EV: Record<Lang, PageText> = {
     ],
     note: "The artists, events and attendees in this demo are fictional. The demo runs in your browser; the real system uses the phone camera at the door and stores everything in Google Sheets.",
   },
+  zh: {
+    metaTitle: "演示 · 活动二维码：按艺人统计到场",
+    metaDescription: "看看活动如何统计每位艺人或网红带来多少人：二维码邀请、个人二维码登记、入场扫码核验。",
+    tag: "活动与场馆",
+    title: "活动二维码：每位艺人带来多少人？",
+    lead: "艺人创建邀请并在社交媒体上分享。每位粉丝登记后获得个人二维码。入场时扫码，活动方就能准确知道每位艺人带来了多少人。",
+    howTitle: "真实系统如何运作",
+    how: [
+      "艺人或网红填写一张简短表单，获得可发布到 TikTok、Instagram 或快拍的链接和二维码。",
+      "每位粉丝填写姓名、邮箱和手机号，同意数据隐私政策，然后在屏幕上和邮箱中收到个人二维码。",
+      "二维码按人发放，而不是按艺人：不能转让，不能重复使用，也不能用于其他活动。同一邮箱在同一邀请下只能登记一次。",
+      "入场时，工作人员凭密码登录，用手机摄像头扫码（自动选择后置摄像头），也可以通过照片或手动输入代码核验。",
+      "每次入场都会记录时间和对应艺人，看板实时显示每位艺人的登记人数和到场人数：可作为支付佣金或奖励最佳推广者的依据。",
+      "所有数据保存在 Google Sheets 中，无需昂贵的软件授权。后续模块：吧台兑换福利、艺人专属看板、仅限到场观众的投票。",
+    ],
+    note: "本演示中的艺人、活动和观众均为虚构。演示在您的浏览器中运行；真实系统在入场处使用手机摄像头，并将所有数据保存在 Google Sheets 中。",
+  },
 };
 
 const GEO: Record<Lang, PageText> = {
@@ -142,7 +193,7 @@ const GEO: Record<Lang, PageText> = {
     how: [
       "Fuentes: se leen los RSS de 19 medios de 18 países, de Occidente, Rusia, China, Medio Oriente y Latinoamérica. El país de cada medio está fijado a mano (no lo adivina la IA) y se marca si es público o estatal.",
       "Filtro: se toman las noticias de las últimas 48 horas y la IA descarta lo que no es geopolítica (sucesos locales, deportes, farándula).",
-      "Enriquecimiento: para cada noticia se obtiene resumen (en español e inglés), protagonistas, países involucrados (código ISO), tema de una lista fija, subtema, sentimiento y efecto en el riesgo de mercado.",
+      "Enriquecimiento: para cada noticia se obtiene resumen (en español, inglés y chino), protagonistas, países involucrados (código ISO), tema de una lista fija, subtema, sentimiento y efecto en el riesgo de mercado.",
       "Validación: la respuesta de la IA se revisa contra la lista de temas y los códigos de país válidos; lo que no encaja se descarta en vez de inventarse.",
       "Resultado: una tabla que se puede filtrar y exportar a CSV o consumir como JSON. Se renueva cada hora.",
       "La misma técnica sirve para tus datos: reseñas de clientes, correos, tickets de soporte, encuestas abiertas o descripciones de productos, con las categorías que tu negocio necesite.",
@@ -159,12 +210,29 @@ const GEO: Record<Lang, PageText> = {
     how: [
       "Sources: RSS feeds from 19 outlets in 18 countries, across the West, Russia, China, the Middle East and Latin America. Each outlet's country is set by hand (not guessed by AI) and state or public broadcasters are labeled.",
       "Filtering: news from the last 48 hours is collected and AI discards anything that isn't geopolitics (local crime, sports, entertainment).",
-      "Enrichment: for each story we get a summary (in English and Spanish), key people, countries involved (ISO code), a topic from a fixed list, a subtopic, sentiment and the likely effect on market risk.",
+      "Enrichment: for each story we get a summary (in English, Spanish and Chinese), key people, countries involved (ISO code), a topic from a fixed list, a subtopic, sentiment and the likely effect on market risk.",
       "Validation: the AI's answer is checked against the topic list and valid country codes; anything that doesn't fit is dropped instead of made up.",
       "Output: a table you can filter and export to CSV or consume as JSON. It refreshes every hour.",
       "The same technique works on your data: customer reviews, emails, support tickets, open-ended surveys or product descriptions, with the categories your business needs.",
     ],
     note: "Classification is automatic and can be wrong; each row links to the original story. Headlines and summaries belong to their outlets; we only show the headline, a short summary and the link.",
+  },
+  zh: {
+    metaTitle: "演示 · AI 数据增强",
+    metaDescription: "来自全球 19 家媒体的地缘政治新闻，由 AI 实时摘要和分类：媒体及其所属国家、相关人物、涉及国家、主题、子主题和情感倾向。",
+    tag: "实时数据",
+    title: "AI 数据增强",
+    lead: "输入零散文本，输出有用的表格。这里我们用真实的地缘政治新闻来演示：读取全球各地的媒体，由 AI 为每条新闻生成摘要，并按相关人物、国家、主题、子主题和情感倾向分类。可以筛选表格，也可以下载 CSV。",
+    howTitle: "如何运作",
+    how: [
+      "来源：读取 18 个国家 19 家媒体的 RSS，覆盖西方、俄罗斯、中国、中东和拉丁美洲。每家媒体所属国家由人工设定（不由 AI 猜测），并标注是否为公共媒体或官方媒体。",
+      "筛选：收集最近 48 小时的新闻，由 AI 剔除与地缘政治无关的内容（地方社会新闻、体育、娱乐）。",
+      "增强：为每条新闻生成摘要（中文、英文和西班牙文）、相关人物、涉及国家（ISO 代码）、固定列表中的主题、子主题、情感倾向，以及对市场风险的可能影响。",
+      "校验：AI 的结果会与主题列表和有效国家代码核对；不符合的内容直接丢弃，而不是凭空编造。",
+      "输出：可筛选的表格，可导出为 CSV 或以 JSON 方式调用。每小时更新一次。",
+      "同样的方法也适用于您的数据：客户评论、邮件、客服工单、开放式问卷或商品描述，分类方式按您的业务需求定制。",
+    ],
+    note: "分类由 AI 自动完成，可能出错；每一行都附有原文链接。标题和摘要版权归各媒体所有；本页仅显示标题、简短摘要和链接。",
   },
 };
 

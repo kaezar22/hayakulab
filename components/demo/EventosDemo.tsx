@@ -26,6 +26,7 @@ const NOMBRES = ["Lucía Navarro", "Andrés Pérez", "Camila Rojas", "Julián To
 const PERKS = {
   es: ["Cóctel de bienvenida", "10% de descuento en consumo", "Entrada preferencial"],
   en: ["Welcome cocktail", "10% off food and drinks", "Fast-track entry"],
+  zh: ["欢迎鸡尾酒一杯", "消费九折", "优先入场"],
 };
 
 function seed(lang: Lang = "es"): { invs: Inv[]; regs: Reg[] } {
@@ -108,7 +109,7 @@ const TX = {
     otherTitle: "⚠️ QR de otro evento", otherText: (n: string) => `${n} está registrado para `,
     nfTitle: "❌ Código no encontrado", nfText: " no está registrado.", invalid: "❌ Este QR no es de QR Eventos",
     attendance: "Asistencia por artista", checkedIn: "Ingresaron", registered: "Registrados", you: "Tú", reset: "↺ Reiniciar demo",
-    dl: "mi_qr",
+    dl: "mi_qr", usedAfter: ".", stop: ".",
   },
   en: {
     other: "Other", qrAlt: "QR code",
@@ -142,7 +143,41 @@ const TX = {
     otherTitle: "⚠️ QR code for another event", otherText: (n: string) => `${n} is registered for `,
     nfTitle: "❌ Code not found", nfText: " is not registered.", invalid: "❌ This is not a QR Events code",
     attendance: "Attendance by artist", checkedIn: "Checked in", registered: "Signed up", you: "You", reset: "↺ Reset demo",
-    dl: "my_qr",
+    dl: "my_qr", usedAfter: ".", stop: ".",
+  },
+  zh: {
+    other: "其他", qrAlt: "二维码",
+    errArtist: "请填写艺名。", errEmail: "请填写有效的邮箱。", errName: "请填写姓名。", errPhone: "请填写有效的手机号。",
+    errConsent: "必须同意数据隐私政策才能登记。",
+    tabs: [["1 · 艺人", "创建邀请"], ["2 · 粉丝", "登记并获取二维码"], ["3 · 入口", "扫码并统计到场"]],
+    artistTitle: "🎟️ 邀请你的粉丝",
+    artistLead: "为活动创建你的邀请。你会得到一个链接和二维码，可以分享到 TikTok 或 Instagram。每位登记的粉丝都会计入你的名下。",
+    stageName: "艺名 *", stageNamePh: "例如 DJ Kaori", network: "社交平台", user: "账号", userPh: "@你的账号", yourEmail: "你的邮箱 *", emailPh: "you@email.com",
+    event: "活动", perk: "粉丝福利", generate: "生成我的二维码",
+    artistOk: (n: string) => `完成，${n}！分享这个链接或二维码吧。`, downloadQr: "↓ 下载二维码", openAsFollower: "以粉丝身份打开 →",
+    inviteCode: "你的邀请码：", inviteCodeAfter: "。我们会据此统计有多少人是因你而来。",
+    emptyArtist: "你的分享链接和二维码会显示在这里。",
+    inviteOf: "邀请人", yourPerk: "你的福利：",
+    exampleNote: "你正在查看 MC Tano 的示例邀请。在“艺人”标签页创建你自己的邀请后，就会显示在这里。",
+    signupLead: "登记后即可获得个人二维码，入场时出示即可。",
+    fullName: "姓名 *", email: "邮箱 *", phone: "手机号 *", phonePh: "138 0000 0000",
+    readPolicy: "阅读数据隐私政策",
+    policy: "你的个人信息（姓名、邮箱和手机号）仅用于发送二维码、核验入场、发放福利以及按艺人统计到场人数，符合哥伦比亚个人数据保护法（2012 年第 1581 号法律）。你可以随时查询、更新或要求删除你的数据。",
+    policyNote: "（演示用示例文本。）",
+    consent: "我同意按照数据隐私政策处理我的个人信息。*",
+    getQr: "获取我的二维码", another: "+ 再登记一位粉丝", simulate: "模拟再来 5 位粉丝",
+    already: "这个邮箱已经登记过。这是你的二维码。", followerOk: (n: string) => `完成，${n}！这是你的个人二维码。`,
+    sentTo: "📧 也已发送到", code: "代码：", downloadMine: "↓ 下载我的二维码", toDoor: "前往入口 →",
+    personalNote: "仅限本人使用：只能入场一次。", emptyFollower: "粉丝的个人二维码会显示在这里。",
+    door: "🚪 入口 ·", doorLead: "活动现场，工作人员用手机摄像头扫码。这里点击一张入场券即可“扫描”，或者手动输入代码。",
+    otherEvent: " · 其他活动", yours: "你的", codePh: "二维码代码，例如 F5MZJ7PVHP", codeAria: "二维码代码", validate: "核验",
+    waiting: "等待扫码…",
+    okTitle: (n: string) => `✅ 欢迎，${n}`, okBy: "受邀于", codeWord: "代码",
+    usedTitle: "⛔ 该二维码已使用", usedText: (n: string, a: string) => `${n}（${a}）已于 `,
+    otherTitle: "⚠️ 其他活动的二维码", otherText: (n: string) => `${n} 登记的活动是 `,
+    nfTitle: "❌ 未找到该代码", nfText: " 未登记。", invalid: "❌ 这不是活动二维码系统的代码",
+    attendance: "各艺人到场人数", checkedIn: "已入场", registered: "已登记", you: "你", reset: "↺ 重置演示",
+    dl: "my_qr", usedAfter: " 入场。", stop: "。",
   },
 };
 
@@ -386,7 +421,7 @@ export default function EventosDemo({ lang = "es" }: { lang?: Lang }) {
             {miReg ? (
               <div className="ev-card ev-ticket ev-pop">
                 {miReg.repetido ? <p className="ev-info">{t.already}</p> : <p className="ev-ok">{t.followerOk(miReg.reg.nombre.split(" ")[0])}</p>}
-                {!miReg.repetido && <p className="ev-mail">{t.sentTo} <b>{miReg.reg.email}</b>.</p>}
+                {!miReg.repetido && <p className="ev-mail">{t.sentTo} <b>{miReg.reg.email}</b>{t.stop}</p>}
                 <QrImg text={`QREV:${miReg.reg.id}`} size={190} alt={t.qrAlt} />
                 <span className="ev-code">{t.code} <b>{miReg.reg.id}</b></span>
                 <div className="ev-actions">
@@ -446,13 +481,13 @@ export default function EventosDemo({ lang = "es" }: { lang?: Lang }) {
               {res?.estado === "YA_INGRESO" && (
                 <>
                   <b>{t.usedTitle}</b>
-                  <span>{t.usedText(res.reg.nombre, res.reg.artista)}<strong>{res.reg.checkin}</strong>.</span>
+                  <span>{t.usedText(res.reg.nombre, res.reg.artista)}<strong>{res.reg.checkin}</strong>{t.usedAfter}</span>
                 </>
               )}
               {res?.estado === "OTRO_EVENTO" && (
                 <>
                   <b>{t.otherTitle}</b>
-                  <span>{t.otherText(res.reg.nombre)}<strong>{res.reg.evento}</strong>.</span>
+                  <span>{t.otherText(res.reg.nombre)}<strong>{res.reg.evento}</strong>{t.stop}</span>
                 </>
               )}
               {res?.estado === "NO_EXISTE" && (

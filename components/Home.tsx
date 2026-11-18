@@ -197,6 +197,97 @@ const C = {
     finalBook: "Book a free assessment",
     finalWa: "Message us on WhatsApp",
   },
+  zh: {
+    eyebrow: "面向中小企业的 AI 自动化",
+    h1a: "让流程自己运转，",
+    h1b: "更快",
+    lead: "我们把团队的手工工作——订单、发票、报表、在系统之间复制粘贴——变成全天候自动运行的工作流。",
+    ctaBook: "预约免费评估",
+    ctaDemos: "体验演示 →",
+    points: ["无需更换现有软件", "48 小时内给出方案", "数周见效"],
+    flowLabel: "自动化订单示例",
+    flowHead: "自动化订单 · 实时",
+    flow: [
+      ["7 号桌扫描二维码", "2 杯莫吉托 · 1 份玉米片", "0 秒"],
+      ["吧台即时收到订单", "订单看板 · 无纸化", "1 秒"],
+      ["销售自动入账", "库存和收银同步更新", "2 秒"],
+      ["“您的餐点已备好！” 🔔", "顾客手机响铃并振动", "✓"],
+    ],
+    flowStat: "数小时 → 数秒",
+    flowStatLabel: "过去靠手工完成的工作",
+    painsKicker: "似曾相识？",
+    painsTitle: "如果团队还在手工做这些事，就可以自动化",
+    pains: [
+      ["订单通过 WhatsApp 发来，再由专人抄进 Excel", "客户在线下单，订单直接可以开票"],
+      ["服务员在各桌之间来回跑着点单", "每桌一个二维码：顾客自助点单，吧台即时看到"],
+      ["每周一手工整理报表", "看板自动更新，数据异常时自动提醒"],
+      ["有人把 PDF 发票逐一录入 ERP", "AI 自动读取发票、核对金额，数据直接可用"],
+      ["有人阅读新闻、评论或邮件，再手工在 Excel 里分类", "AI 自动摘要和分类，生成可筛选、可分析的表格"],
+    ],
+    servicesKicker: "服务",
+    servicesTitle: "我们能自动化什么",
+    servicesSub: "基于贵公司现有工具打造的定制方案。",
+    services: [
+      ["订单与销售", "为酒吧和餐厅提供扫码点单，为批发商提供 B2B 订货平台，商品目录与库存实时连接。"],
+      ["系统集成", "打通 ERP、Google Sheets、Excel、Shopify 和各类 API，告别手工复制粘贴。"],
+      ["AI 助手", "为网站或内部团队打造基于公司资料作答的智能客服，并自动读取发票和文件。"],
+      ["数据增强", "AI 读取零散文本——新闻、评论、邮件、工单、商品目录——整理成包含摘要、类别、相关人物和情感倾向的表格。"],
+      ["自动报表", "Power BI 或 Streamlit 看板，自动生成和发送报表，并通过邮件或 WhatsApp 推送提醒。"],
+      ["团队 AI 赋能", "为团队配置现有的 AI 工具并进行培训，从第一天起就用出价值。"],
+    ],
+    otherTitle: "还有其他流程想自动化？",
+    otherText: "告诉我们，我们会判断能否自动化以及如何实现。",
+    otherCta: "咨询 AI 助手",
+    demosKicker: "在线演示",
+    demosTitle: "亲自体验",
+    demosSub: "这些是我们为客户打造的真实系统，使用示例数据。随意点击：下单、登记来宾、下载发票，或实时浏览由 AI 分类的新闻。",
+    tryDemo: "体验演示",
+    liveDemo: "查看实时演示",
+    qr: {
+      table: "7 号桌", send: "提交订单", fresh: "新订单", board1: "7 号桌 · Ana", board2: "吧台 · Andrés", ready: "已完成", board3: "3 号桌 · Laura 🔔",
+      tag: "酒吧与餐厅", title: "扫码点单",
+      text: "顾客扫描桌上的二维码，用手机下单，吧台即时收到。餐点备好后，顾客手机会响铃并振动。",
+    },
+    b2b: {
+      review: "待核对", none: "未找到", pdf: "↓ PDF 发票 · Excel",
+      tag: "经销商与批发商", title: "B2B 订货与开票",
+      text: "客户在线下单；即使名称写错，系统也能识别客户身份，套用其价目表，并生成发票。",
+    },
+    ev: {
+      inviteOf: "邀请人", personal: "个人二维码", attendance: "各艺人到场人数", welcome: "✅ 欢迎，Lucía",
+      tag: "活动与场馆", title: "活动二维码：按艺人统计到场",
+      text: "每位艺人分享自己的邀请，每位粉丝获得个人二维码，入场时扫码核验。每位艺人带来多少人，一目了然。",
+    },
+    geo: {
+      enriched: "↓ AI 数据增强",
+      rows: [["🇷🇺🇺🇦", "武装冲突 · 乌克兰战争", "n", "负面"], ["🇺🇸🇨🇳", "贸易 · 关税休战", "z", "中性"], ["🇨🇴🇻🇪", "外交 · 边境协议", "p", "正面"]],
+      tag: "分析师、媒体与数据团队", title: "AI 数据增强",
+      text: "来自全球 19 家媒体的地缘政治新闻，实时摘要和分类：涉及哪些人物、哪些国家，主题、子主题和情感倾向。",
+    },
+    clientsKicker: "客户成果",
+    clientsTitle: "客户怎么说",
+    processKicker: "合作流程",
+    processTitle: "从第一次通话到流程自动运转",
+    steps: [
+      ["免费评估", "45 分钟视频通话，聊一个目前靠手工完成的流程：由谁做、在哪个系统里做、每周花多少小时。"],
+      ["48 小时内给出方案", "您会收到一页纸的方案：哪些能自动化、哪些不能、大概费用多少。是否合作由您决定。"],
+      ["分阶段交付", "小步快跑，每次交付都由团队用真实数据测试。以周计，而不是以月计。"],
+      ["上线运行", "我们培训团队、整理完整文档，并在上线初期全程陪跑。"],
+    ],
+    faqKicker: "常见问题",
+    faqTitle: "大家常问的问题",
+    faqSub: "还有其他问题？右下角的 AI 助手会即时回答。",
+    faq: [
+      ["需要更换现有软件吗？", "不需要。我们在您现有的工具（ERP、Excel、Google Sheets、WhatsApp）之上进行连接。只有确实值得时，才会建议更换。"],
+      ["项目费用是多少？", "取决于项目范围，所以我们先做免费评估。在您做任何承诺之前，会先拿到清晰的报价。"],
+      ["我的数据安全吗？", "集成尽可能使用只读权限，密钥只保存在服务器上，绝不暴露在浏览器中，您的数据也不会用于训练模型。"],
+      ["你们和哥伦比亚以外的公司合作吗？", "合作。我们远程服务世界各地的企业，可以用中文、英语或西班牙语沟通。我们位于哥伦比亚波哥大（UTC−5）。"],
+    ],
+    finalTitle: "告诉我们哪个流程最耗时间",
+    finalText: "45 分钟内，我们会告诉您能否自动化、如何实现以及大概费用。没有任何附加义务。",
+    finalBook: "预约免费评估",
+    finalWa: "通过 WhatsApp 联系",
+  },
 };
 
 function Icon({ children }: { children: React.ReactNode }) {
@@ -228,7 +319,7 @@ export default function Home({ lang }: { lang: Lang }) {
               <div className="hk-eyebrow">{t.eyebrow}</div>
               <h1>
                 {t.h1a}
-                <em>{t.h1b}</em>.
+                <em>{t.h1b}</em>{lang === "zh" ? "。" : "."}
               </h1>
               <p className="hk-lead">{t.lead}</p>
               <div className="hk-hero-ctas">
@@ -437,7 +528,7 @@ export default function Home({ lang }: { lang: Lang }) {
             <div className="hk-kicker">{t.clientsKicker}</div>
             <h2>{t.clientsTitle}</h2>
             {TESTIMONIALS.map((item) => {
-              const x = lang === "en" && item.en ? item.en : null;
+              const x = lang !== "es" ? (item[lang] ?? null) : null;
               return (
                 <figure key={item.client} className="hk-testimonial">
                   <div className="hk-quote">

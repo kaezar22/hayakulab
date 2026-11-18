@@ -119,6 +119,47 @@ const TX = {
     similarity: "similitud",
     status: { ok: "Cruce automático", review: "Revisar", notfound: "No encontrado" },
   },
+  zh: {
+    tab1: "1 · 餐厅",
+    tab1b: "下单",
+    tab2: "2 · 后台",
+    tab2b: "匹配、定价与开票",
+    nameLabel: "您的餐厅",
+    nameHint: "可以从下面的客户中选一个，也可以自己输入。写错字、少写词都没关系：试试 “forno chico” 或 “mirador”，或者输入一个不是客户的名称。",
+    clientsTitle: (n: number, c: number) => `我们的客户：${c} 家公司旗下 ${n} 个门店`,
+    namePh: "例如 forno chico",
+    delivery: "送货日期",
+    products: "商品",
+    noPrices: "餐厅在这里看不到价格；后台会为每位客户套用其专属价目表。",
+    cats: { yogurt: "酸奶与库米斯", cheese: "奶酪", butter: "黄油与奶油", milk: "牛奶与奶粉", sweets: "炼乳与牛奶焦糖酱" } as Record<string, string>,
+    unit: { kg: "千克", unit: "" },
+    yourOrder: "您的订单",
+    empty: "请至少添加一件商品。",
+    send: "提交订单",
+    needName: "请填写餐厅名称。",
+    sent: (id: string) => `订单 ${id} 已提交。下面是后台看到的内容：`,
+    stats: ["订单", "自动匹配", "待核对", "未找到", "可开票"],
+    typed: "填写的名称",
+    matched: "匹配到的门店",
+    legal: "法人名称",
+    list: "价目表",
+    noMatch: "未找到客户。系统绝不猜测：需要有人新建客户，或致电餐厅确认。",
+    review: "匹配度较低。开票前请确认客户是否正确。",
+    confirm: "确认匹配",
+    missingPrice: (n: number) => `有 ${n} 件商品不在该客户的价目表中。它们不会计入发票，并已标记。`,
+    notInList: "不在价目表中",
+    invoice: "PDF 发票",
+    invoiced: "已开票",
+    placed: "下单",
+    deliver: "送货",
+    yours: "您的订单",
+    total: "合计",
+    csv: "下载全部明细（Excel）",
+    reset: "重置演示",
+    resetDone: "演示已重置。",
+    similarity: "相似度",
+    status: { ok: "自动匹配", review: "待核对", notfound: "未找到" },
+  },
 };
 
 type Row = { order: Order; match: Match; confirmed: boolean };
@@ -200,10 +241,12 @@ export default function OrdersDemo({ lang = "es" }: { lang?: Lang }) {
   }
 
   function downloadCsv() {
-    const head =
-      lang === "es"
-        ? ["Pedido", "Fecha pedido", "Fecha entrega", "Cliente escrito", "Punto", "Razón social", "NIT", "Lista", "Similitud %", "Estado", "Código", "Producto", "Cantidad", "Precio", "Subtotal"]
-        : ["Order", "Placed", "Delivery", "Typed name", "Point", "Legal entity", "NIT", "List", "Similarity %", "Status", "Code", "Product", "Qty", "Price", "Subtotal"];
+    const head = {
+      es: ["Pedido", "Fecha pedido", "Fecha entrega", "Cliente escrito", "Punto", "Razón social", "NIT", "Lista", "Similitud %", "Estado", "Código", "Producto", "Cantidad", "Precio", "Subtotal"],
+      en: ["Order", "Placed", "Delivery", "Typed name", "Point", "Legal entity", "NIT", "List", "Similarity %", "Status", "Code", "Product", "Qty", "Price", "Subtotal"],
+      zh: ["订单", "下单日期", "送货日期", "填写的名称", "门店", "法人名称", "税号 (NIT)", "价目表", "相似度 %", "状态", "编码", "商品", "数量", "单价", "小计"],
+    }[lang];
+    const notFound = { es: "no aparece", en: "not found", zh: "未找到" }[lang];
     const iso = (o: number) => dayFromToday(o).toISOString().slice(0, 10);
     const out = [head];
     for (const r of rows) {
@@ -213,7 +256,7 @@ export default function OrdersDemo({ lang = "es" }: { lang?: Lang }) {
           iso(r.order.placedOffset),
           iso(r.order.deliveryOffset),
           r.order.typedName,
-          r.match.point ?? (lang === "es" ? "no aparece" : "not found"),
+          r.match.point ?? notFound,
           r.match.client?.legalName ?? "",
           r.match.client?.nit ?? "",
           r.match.client?.priceList ?? "",
@@ -222,7 +265,7 @@ export default function OrdersDemo({ lang = "es" }: { lang?: Lang }) {
           l.code,
           productName(l.code, lang),
           String(l.qty),
-          l.price === null ? (lang === "es" ? "no aparece" : "not found") : String(l.price),
+          l.price === null ? notFound : String(l.price),
           l.subtotal === null ? "" : String(l.subtotal),
         ]);
       }
@@ -230,7 +273,7 @@ export default function OrdersDemo({ lang = "es" }: { lang?: Lang }) {
     const csv = "﻿" + out.map((row) => row.map((v) => `"${v.replace(/"/g, '""')}"`).join(";")).join("\r\n");
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-    a.download = lang === "es" ? "aguaclara_pedidos_con_precios.csv" : "aguaclara_orders_priced.csv";
+    a.download = lang === "es" ? "aguaclara_pedidos_con_precios.csv" : "aguaclara_orders_priced.csv"; // nombre de archivo sin caracteres chinos
     a.click();
     URL.revokeObjectURL(a.href);
   }

@@ -1,6 +1,6 @@
 # Hayaku Lab · www.hayakulab.com
 
-Sitio web de Hayaku Lab: automatización con IA para pymes. En español (`/`) e inglés (`/en`), con un botón ES / EN en el menú.
+Sitio web de Hayaku Lab: automatización con IA para pymes. En español (`/`), inglés (`/en`) y chino simplificado (`/zh`), con un botón ES / EN / 中文 en el menú.
 
 - **Inicio** (`/`): hero, servicios, demos, testimonios, proceso, preguntas frecuentes y contacto.
 - **Demo Pedidos por QR** (`/demos/pedidos-qr`): celular del cliente + tablero del bar, todo en el navegador (basado en `gigs/qr_space`).
@@ -28,9 +28,10 @@ Stack: Next.js 16 (App Router), React 19, TypeScript. Sin base de datos: las dem
 
 ## Idiomas
 
-- Español vive en `app/(es)/` y se sirve en la raíz; inglés vive en `app/(en)/en/` y se sirve bajo `/en`. Cada idioma tiene su propio layout raíz (para que `<html lang>` sea correcto).
-- Las rutas de `app/` solo llaman a los componentes con `lang="es"` o `lang="en"`: los textos de ambos idiomas están juntos en el mismo componente.
-- Al agregar una página nueva, crea la ruta en los dos grupos y agrégala a `app/sitemap.ts`.
+- Español vive en `app/(es)/` y se sirve en la raíz; inglés en `app/(en)/en/` (bajo `/en`) y chino en `app/(zh)/zh/` (bajo `/zh`). Cada idioma tiene su propio layout raíz (para que `<html lang>` sea correcto).
+- Las rutas de `app/` solo llaman a los componentes con `lang="es"`, `"en"` o `"zh"`: los textos de los tres idiomas están juntos en el mismo componente.
+- En chino se usan las fuentes del sistema (PingFang, Microsoft YaHei, Noto Sans SC), porque Sora e IBM Plex no traen caracteres chinos. La factura PDF de la demo B2B sale en inglés en la versión china (las fuentes de jsPDF no tienen caracteres chinos).
+- Al agregar una página nueva, crea la ruta en los tres grupos y agrégala a `app/sitemap.ts`.
 
 ## Correr en tu computador
 

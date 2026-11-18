@@ -6,6 +6,7 @@ import { EMAIL, bookingHref } from "@/lib/site";
 const T = {
   es: { back: "← Todas las demos", live: "Demo en vivo", ctaTitle: "¿Quieres esto en tu empresa?", ctaText: "Lo adaptamos a tus procesos, tus datos y tus sistemas.", cta: "Agendar diagnóstico gratis" },
   en: { back: "← All demos", live: "Live demo", ctaTitle: "Want this in your company?", ctaText: "We adapt it to your processes, your data and your systems.", cta: "Book a free assessment" },
+  zh: { back: "← 全部演示", live: "在线演示", ctaTitle: "想在贵公司使用？", ctaText: "我们会根据您的流程、数据和系统进行定制。", cta: "预约免费评估" },
 };
 
 export default function DemoShell({
